@@ -1,0 +1,43 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Atualizar Senha
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+    .form-control:focus {
+    color: #000;
+    background-color: #ffffff;
+    border-color: #4cb061;
+    outline: 0
+}
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success text-uppercase font-weight-bold">{{paciente}}</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-success btn-block">Atualizar Senha</button>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'home:perfil' pk=paciente.pk %}" type="submit" class="btn btn-danger btn-block">Voltar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

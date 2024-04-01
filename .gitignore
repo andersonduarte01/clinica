@@ -1,0 +1,6 @@
+venv/
+media/
+migrations/
+db.sqlite3
+templates/temp.html
+*__pycache__*

@@ -1,0 +1,125 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Realizar Exame
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+    .form-control:focus {
+    color: #000;
+    background-color: #ffffff;
+    border-color: #4cb061;
+    outline: 0
+}
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h4 class="h4 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">{{orcamento.paciente}}</h4>
+                    <h4 class="h4 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">{{orcamento.data_cadastro|date:"d/m/Y"}}</h4>
+                </div>
+                <hr>
+                <div class="row">
+                    <div id="formato-cpf" class="h6 mt-1 col-6 col-md-6 info-paciente" ></div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente text-uppercase" id="idade-paciente"></div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">SEXO: {{orcamento.paciente.sexo}}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <hr>
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success text-left"
+                        style="margin-top: 8px;">{{exame}}
+                    </h5>
+                    <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">
+                        Nº: {{exame.codigo}}
+                    </h5>
+                </div>
+                <hr>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ formset.management_form }}
+                    <div class="table-responsive p-3">
+                       <table class="table table-flush table-hover" id="dataTableHover">
+                          <thead class="bg-success">
+                          <tr class="text-uppercase text-white">
+                            <th>Nome</th>
+                            <th>Inserir</th>
+                            <th>Valores de Referência</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {% for form1 in formset %}
+                            <tr>
+                              <td class="text-success font-weight-bold">{{ form1.instance.nome_referencia }}</td>
+                              <td>
+                                  {{ form1.valor_obtido }}
+                              </td>
+                              <td class="text-secondary">
+                                    {% for fator in form1.instance.fatores.all %}
+                                        {% if fator.nome_fator != None %}{{ fator.nome_fator }}{% else %}{{ fator.idade }}{% endif %}: {{ fator.limite_inferior }} - {{ fator.limite_superior }}<br>
+                                    {% endfor %}
+                                    {% for valor in form1.instance.padrao.all %}
+                                        {{ valor.tipo_valor }}: {{ valor.valor_esperado }}<br>
+                                    {% endfor %}
+                                  {% if form1.instance.limite_inferior != None and form1.instance.limite_superior %}
+                                   {{ form1.instance.limite_inferior }} até {{ form1.instance.limite_superior }}
+                                  {% endif %}
+
+                              </td>
+                             <input type="hidden" name="referencias-{{ forloop.counter0 }}-id" value="{{ form1.instance.id }}">
+                            </tr>
+                          {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    {% bootstrap_form form %}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block">Atualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function formatarCPF(cpf) {
+        cpf = cpf.replace(/[.-]/g, '');
+        return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
+    }
+
+    var cpf = "{{orcamento.paciente.cpf}}";
+    var cpfFormatado = formatarCPF(cpf);
+    document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
+
+    // Calcular idade do paciente
+    var dataNascimentoString = "{{orcamento.paciente.data_nascimento}}";
+    var partesData = dataNascimentoString.split('/'); // Supondo que a data esteja no formato "DD/MM/YYYY"
+    var dataNascimento = new Date(Date.UTC(partesData[2], partesData[1] - 1, partesData[0]));
+    var hoje = new Date();
+    var idade = hoje.getUTCFullYear() - dataNascimento.getUTCFullYear();
+    var mes = hoje.getUTCMonth() - dataNascimento.getUTCMonth();
+    if (mes < 0 || (mes === 0 && hoje.getUTCDate() < dataNascimento.getUTCDate())) {
+        idade--;
+    }
+    document.getElementById("idade-paciente").innerText = "Idade: " + idade + " anos";
+</script>
+{% endblock %}
+
+
+
+

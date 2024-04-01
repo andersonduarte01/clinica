@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualizar Exame</title>
+</head>
+<body>
+<h1>{{exame}}</h1>
+<h2>{{exame.codigo}}</h2>
+<h3>{{exame.medico}}</h3>
+<h4>{{exame.comentario}}</h4>
+<hr>
+<h1>Referencias</h1>
+{% for referencia in exame.referencias.all %}
+<h3>
+    {{referencia.pk}} - {{referencia.nome_referencia}} - {{referencia.limite_inferior}}
+</h3>
+<h4>Fator: {{referencia.fator}}</h4>
+{% if referencia.fator %}
+<h4>Fatores de referencia</h4>
+{% for fator in referencia.fatores.all %}
+<h5>{{fator.pk}} - {{fator.nome_fator}}</h5>
+{% empty %}
+<h5>Vazio</h5>
+{% endfor %}
+{% endif %}
+<h4>Valor: {{referencia.esperado}}</h4>
+{% if referencia.esperado %}
+<h4>Valor Esperado</h4>
+{% for valor in referencia.padrao.all %}
+<h5>{{valor.pk}} - {{valor.tipo_valor}} - {{valor.valor_esperado}}</h5>
+{% empty %}
+<h5>Valor Vazio</h5>
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+</body>
+</html>

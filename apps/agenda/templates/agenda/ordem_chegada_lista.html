@@ -1,0 +1,65 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Lista de Atendimentos
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold text-uppercase">ORDEM DE CHEGADA</h4>
+<h6 class="h6 mb-0 text-success font-weight-bold text-uppercase"> {{ordem_chegada.0.data}}</h6>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card mb-4">
+      <div class="table-responsive p-3">
+        <table class="table align-items-center table-flush table-hover" id="dataTableHover">
+          <thead class="bg-success">
+          <tr class="text-uppercase text-white">
+            <th class="text-center">N</th>
+            <th>PACIENTE</th>
+            <th class="text-center">NUMERO</th>
+            <th class="text-center">DATA</th>
+            <th class="text-center">STATUS_ATENDIMENTO</th>
+            <th class="text-center">LINKS</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for atendimento in ordem_chegada %}
+            <tr>
+            <td class="text-center">{{forloop.counter}}</td>
+            <td>
+              <a href="{% url 'home:perfil' pk=atendimento.nome_paciente.pk %}" class="text-success text-decoration-none">{{atendimento}}</a>
+            </td>
+            <td class="text-center">{{atendimento.sequencia}}</td>
+            <td class="text-center">{{atendimento.data|date:'d/m/y'}}</td>
+              {% if atendimento.status_atendido == 'AGUARDANDO' %}
+                <td class="text-center text-primary">{{atendimento.status_atendido}}</td>
+              {% elif atendimento.status_atendido == 'ATENDIDO' %}
+                <td class="text-center text-success">{{atendimento.status_atendido}}</td>
+              {% elif atendimento.status_atendido == 'CANCELADO' %}
+                <td class="text-center text-danger">{{atendimento.status_atendido}}</td>
+              {% endif %}
+            <td class="text-center">
+              <a href="{% url 'agenda:ordem_chegada_up' pk=atendimento.pk %}" class="text-success" data-toggle="tooltip" data-placement="top" title="Finalizar atendimento">
+                <i class="bi bi-pencil"></i>
+              </a>
+              {% if atendimento.status_atendido == 'ATENDIDO' or atendimento.status_atendido == 'CANCELADO' %}
+                <i class="bi bi-check2"></i>
+              {% else %}
+              <a href="{% url 'atendimento:ordem_orcamento' pk=atendimento.nome_paciente.pk id=atendimento.id %}" class="text-primary" data-toggle="tooltip" data-placement="top" title="Fazer orçamento do paciente">
+                <i class="bi bi-clipboard2-pulse"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <p class="text-danger">Sem atendimentos...</p>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Realização de Exame</title>
+</head>
+<body>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Formset de ReferenciaExame -->
+    <h2>Referência do Exame</h2>
+    {{ referencia_formset.management_form }}
+    {% for form in referencia_formset %}
+        {{ form.as_p }}
+    {% endfor %}
+
+    <!-- Formsets de FatoresReferencia -->
+    <h2>Fatores de Referência</h2>
+    {% for fatores_formset in fatores_formsets %}
+        {{ fatores_formset.management_form }}
+        {% for form in fatores_formset %}
+            {{ form.as_p }}
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Formsets de ValorEsperado -->
+    <h2>Valor Esperado</h2>
+    {% for valor_formset in valor_formsets %}
+        {{ valor_formset.management_form }}
+        {% for form in valor_formset %}
+            {{ form.as_p }}
+        {% endfor %}
+    {% endfor %}
+
+    <button type="submit">Salvar</button>
+</form>
+
+
+</body>
+</html>

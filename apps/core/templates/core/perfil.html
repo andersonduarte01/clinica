@@ -1,0 +1,226 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Perfil do Paciente
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+        .panel-group .panel {
+        border-radius: 0;
+        box-shadow: none;
+        border-color: #EEEEEE;
+    }
+
+    .panel-default > .panel-heading {
+        padding: 0;
+        border-radius: 0;
+        color: #212121;
+        background-color: #F8F8F8;
+        border-color: #EEEEEE;
+    }
+
+    .panel-title {
+        font-size: 14px;
+    }
+
+    .panel-title > a {
+        display: block;
+        padding: 15px;
+        text-decoration: none;
+    }
+
+    .more-less {
+        float: right;
+        color: #212121;
+    }
+
+    .panel-default > .panel-heading + .panel-collapse > .panel-body {
+        border-top-color: #EEEEEE;
+    }
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success text-uppercase font-weight-bold">{{paciente}}</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="col-sm-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="h5 col-md-12 text-center text-success font-weight-bold">
+                            DADOS PESSOAIS
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Nome:</span>  {{paciente}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Data Nasc.:</span> {{paciente.data_nascimento}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">CPF:</span>  {{paciente.cpf}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Cadastrado:</span> {{paciente.cadastrado|date:"m/d/Y"}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a class="btn btn-outline-success btn-block"
+                               href="{% url 'home:atualizar_perfil' pk=paciente.pk %}">
+                                Atualizar Perfil
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a class="btn btn-outline-secondary btn-block"
+                               href="{% url 'home:senha_up' pk=paciente.usuario.pk %}">
+                                Atualizar Senha
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="h5 col-md-12 text-center text-success font-weight-bold">
+                            ENDEREÇO
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Rua:</span> {{endereco}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Nº:</span> {{endereco.numero}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Bairro:</span> {{endereco.bairro}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12 text-secondary">
+                            <span class="font-weight-bold">Cidade:</span> {{endereco.cidade}}/{{endereco.estado}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if endereco != None %}
+                            <a class="btn btn-outline-success btn-block"  href="{% url 'home:atualizar_endereco' pk=endereco.pk %}">Atualizar Endereço</a>
+                            {% else %}
+                            <a class="btn btn-outline-success btn-block"  href="{% url 'home:endereco' id=paciente.usuario.id %}">Cadastrar Endereço</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mb-0 text-center text-success font-weight-bold">HISTÓRICO DE ATENDIMENTOS</h5>
+                        </div>
+                        <div class="col-md-12">
+                            <hr>
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                {% for atendimento in atendimentos %}
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingOne{{atendimento.id}}">
+                                        <h4 class="panel-title">
+                                            <a role="button" class="text-success font-weight-bold" data-toggle="collapse" data-parent="#accordion"
+                                               href="#collapseOne{{atendimento.id}}" aria-expanded="true"
+                                               aria-controls="collapseOne{{atendimento.id}}">
+
+                                                <i class="h6 nbi bi-plus font-weight-bold"></i>
+                                                Atendimento - {{atendimento.data_cadastro}}
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapseOne{{atendimento.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne{{atendimento.id}}">
+                                        <div class="container">
+                                            <div class="panel-body">
+                                                {% for exame in atendimento.exame.all %}
+                                                <div class="list-group">
+                                                    <div class="mb-3 mt-2 list-group-item list-group-item-action flex-column align-items-start">
+                                                        <div class="d-flex w-100 justify-content-between">
+                                                            <h6 class="mb-1 font-weight-bold">{{exame}}</h6>
+                                                            <small class="text-muted">Nº {{exame.codigo}}</small>
+                                                        </div>
+                                                        <div class="d-flex w-100 justify-content-between">
+                                                            <p class="mb-1" style="font-size: 80%;">Status: {{exame.status_exame}}</p>
+                                                            <small class="text-muted">
+                                                                Doutor(a): {% if exame.medico == None %}{% else %}{{exame.medico}}{% endif %}
+                                                            </small>
+                                                        </div>
+                                                        <div class="">
+                                                                {% if exame.status_exame == 'REALIZADO' %}
+                                                                    <small class="text-muted">Baixar: </small>
+                                                                        <a href="{% url 'exame:pdf' pk=exame.pk %}" target="_blank">
+                                                                            <i class="bi bi-file-pdf text-danger"></i>
+                                                                        </a>
+                                                                {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {%empty%}
+                                                <p class="text-danger">Nenhum exame correspondente ao atendimento</p>
+                                                {%endfor%}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-danger">Nenhum atendimento encontrado para esse paciente</p>
+                                {% endfor %}
+                            </div><!-- panel-group -->
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function toggleIcon(e) {
+    $(e.target)
+        .prev('.panel-heading')
+        .find(".more-less")
+        .toggleClass('glyphicon-plus glyphicon-minus');
+}
+$('.panel-group').on('hidden.bs.collapse', toggleIcon);
+$('.panel-group').on('shown.bs.collapse', toggleIcon);
+</script>
+{% endblock %}

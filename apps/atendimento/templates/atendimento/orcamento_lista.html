@@ -1,0 +1,55 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Lista de Orçamentos
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold">LISTA DE ATENDIMENTOS</h4>
+<h6 class="h6 mb-0 text-success font-weight-bold text-uppercase"> {{orcamentos.0.data_cadastro}}</h6>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card mb-4">
+      <div class="table-responsive p-3">
+        <table class="table align-items-center table-flush table-hover" id="dataTableHover">
+          <thead class="bg-success">
+          <tr class="text-uppercase text-white">
+            <th>Nome</th>
+            <th class="text-center">Forma_de_Pagamento</th>
+            <th class="text-center">Total</th>
+            <th class="text-center">Pago</th>
+            <th class="text-center">Editar</th>
+          </tr>
+          </thead>
+          <tfoot>
+          <tr>
+            <th class="text-uppercase text-success">Nome</th>
+            <th class="text-uppercase text-success text-center">Forma_de_Pagamento</th>
+            <th class="text-uppercase text-success text-center">Total</th>
+            <th class="text-uppercase text-success text-center">Pago</th>
+            <th class="text-uppercase text-success text-center">Editar</th>
+          </tr>
+          </tfoot>
+          <tbody>
+          {% for exame in orcamentos %}
+            <tr>
+            <td>{{exame.paciente}}</td>
+            <td class="text-center">{{exame.forma_pagamento}}</td>
+            <td class="text-center">{{exame.valor_total}}</td>
+            <td class="text-center">{{exame.pagamento}}</td>
+            <td class="text-center">
+              <a href="{% url 'atendimento:orcamento_update' pk=exame.pk %}">Edit</a>
+            </td>
+          </tr>
+          {% empty %}
+          <p class="text-danger">Sem exames...</p>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

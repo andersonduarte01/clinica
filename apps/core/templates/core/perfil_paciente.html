@@ -1,0 +1,125 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Buscar Paciente
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+.search:focus{
+        background-color: #E8E8E8;
+    }
+    .result-card {
+        width: 50%;
+        max-height:auto !important;
+        box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.25);
+        border-radius: 7px;
+        border-color: cadetblue;
+        padding: 15px 15px;
+        margin: auto;
+    }
+    .not-visible{
+        display: none;
+    }
+
+    .link{
+        text-decoration: none;
+    }
+
+    .webseries{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+    input[type]{
+        border-color:cadetblue!important;
+    }
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold">Buscar Paciente</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <form autocomplete="off" id="search-form" method="post">
+                    {% csrf_token %}
+                    <input type="text" id="search-input" class="form-control mt-4" placeholder="Pesquisar paciente pelo nome...">
+                </form>
+                <!-- result card-->
+                <div id="result-box" class="not-visible">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+        const sendSearchData = (nomes) => {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "home:busca_paciente" %}',
+                data: {
+                    'ajax_request': true,
+                    'csrfmiddlewaretoken':csrf,
+                    'nomes': nomes,
+                },
+                success: (res) => {
+                    const data = res.data
+                    if (Array.isArray(data)){
+                        result_box.innerHTML = ""
+                        //Now display the searched result
+                        data.forEach(nomes=> {
+                            result_box.innerHTML += `
+                                    <a href="/opcoes/${nomes.pk}/paciente/" class='link'>
+                                        <div class="row mt-2">
+                                            <div class="col-12 text-left ml-3">
+                                                <h6>${nomes.nome}</h6>
+                                                <h6>${nomes.cpf}</h6>
+                                            </div>
+                                        </div>
+                                    </a>`
+                        });
+                    }else{
+                        if (search_input.value.length > 0){
+                             result_box.innerHTML = `<b>${data}</b>`
+                        }else{
+                            result_box.classList.add('not-visible')
+                        }
+                    }
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            })
+        }
+        //get search form
+        const search_form = document.getElementById('search-form')
+        // get search input
+        const search_input = document.getElementById('search-input');
+
+        const result_box = document.getElementById('result-box');
+
+        //get csrf token
+        const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value
+
+        search_input.addEventListener('keyup', e=>{
+            console.log(e.target.value);
+
+        // Now when key is up show the result box
+
+        if(result_box.classList.contains('not-visible')){
+            result_box.classList.remove('not-visible')
+        }
+
+        // lets get the search results
+
+        sendSearchData(e.target.value);
+        });
+    </script>
+{% endblock %}

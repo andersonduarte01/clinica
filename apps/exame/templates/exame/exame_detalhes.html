@@ -1,0 +1,190 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Info Exame
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold text-uppercase">{{exame}}</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row mb-3">
+    <div class="col-xl-12 col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header py-4 bg-success d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-white">INFORMAÇÔES BÁSICAS</h6>
+            </div>
+            <div>
+                <div class="customer-message align-items-center">
+                    <a class="font-weight-bold" href="#">
+                        <div class="text-success message-title">Nome</div>
+                        <div class="small text-gray-500 message-time font-weight-bold">{{exame}}</div>
+                    </a>
+                </div>
+                <div class="customer-message align-items-center">
+                    <a class="font-weight-bold" href="#">
+                        <div class="text-success message-title">Material Coletado</div>
+                        <div class="small text-gray-500 message-time font-weight-bold">{{exame.material}}</div>
+                    </a>
+                </div>
+                <div class="customer-message align-items-center">
+                    <a class="font-weight-bold" href="#">
+                        <div class="text-success message-title">Metódo de Análise</div>
+                        <div class="small text-gray-500 message-time font-weight-bold">{{exame.metodo}}</div>
+                    </a>
+                </div>
+                <div class="customer-message align-items-center">
+                    <a class="font-weight-bold" href="#">
+                        <div class="text-success message-title">Observações</div>
+                        <div class="small text-gray-500 message-time font-weight-bold">
+                            {% if exame.comentario != None %}
+                             {{exame.comentario | slice:":100"}}
+                            {% else%}
+                              Sem observações
+                            {% endif%}
+                        </div>
+                    </a>
+                </div>
+                <div class="card-footer text-center">
+                    <a class="m-0 small text-success card-link font-weight-bold" href="{% url 'exame:exame_up' pk=exame.pk %}">Editar Informações Básicas <i
+                            class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header py-4 bg-success d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-white">REFERÊNCIAS</h6>
+            </div>
+            {% for referencia in exame.referencias.all %}
+            <div class="customer-message align-items-center d-flex justify-content-between">
+                <a class="font-weight-bold" href="#">
+                    <div class="text-success message-title">{{referencia.nome_referencia}}</div>
+                    {% if referencia.fator %}
+                        {% for fator_ref in referencia.fatores.all %}
+                            <div class="small text-gray-500 message-time font-weight-bold">
+                               {% if fator_ref.nome_fator != None %}{{fator_ref.nome_fator}}{% elif  fator_ref.idade != None %}{{fator_ref.idade}}{% else %}Sem fator de referência{% endif %}: {{fator_ref.limite_inferior}} a {{fator_ref.limite_superior}}
+                           </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if referencia.esperado %}
+                        {% for value1 in referencia.padrao.all %}
+                            <div class="small text-gray-500 message-time font-weight-bold">
+                              {{value1.tipo_valor}}: {{value1.valor_esperado}}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if referencia.esperado == False and referencia.fator == False %}
+                       <div class="small text-gray-500 message-time font-weight-bold">
+                           {% if  referencia.limite_inferior != None and referencia.limite_superior != Nome %}
+                            {{referencia.limite_inferior}} a {{referencia.limite_superior}}
+                           {% else %}
+                              Adicione Valores de Referência
+                           {% endif %}
+
+                       </div>
+                    {% endif %}
+                </a>
+                <div class="small text-gray-500 message-time font-weight-bold ml-auto"style="margin-right:30px;">
+                    <a href="{% url 'exame:referencia_update' pk=referencia.pk %}" class="text-success"><i class="bi bi-pencil-square"></i></a>
+                    <a href="#" class="text-danger" type="button" data-toggle="modal" data-target="#exampleModalCenter{{referencia.id}}"
+                       id="#modalCenter{{referencia.id}}"><i class="bi bi-trash"></i></a>
+                </div>
+            </div>
+            <div class="modal fade" id="exampleModalCenter{{referencia.id}}" tabindex="-1" role="dialog"
+                 aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger">
+                            <h5 class="modal-title text-white" id="exampleModalCenterTitle">{{referencia.nome_referencia}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Deseja realmente deletar <strong class="text-danger">{{referencia.nome_referencia}}</strong> ?<br>
+                            <span class="small">Todos os valores a respeito de {{referencia.nome_referencia}} serão excluídos!</span>
+                        </div>
+                        <div class="modal-footer">
+                            <form method="post" action="{% url 'exame:referencia_del' pk=referencia.pk %}">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-success" data-dismiss="modal">Sair</button>
+                                <button type="submit" class="btn btn-outline-danger">Confirmar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="customer-message align-items-center">
+                <a class="font-weight-bold" href="#">
+                    <div class="text-success message-title">Sem referências</div>
+                    <div class="small text-gray-500 message-time font-weight-bold">Sem referências</div>
+                </a>
+            </div>
+            {% endfor %}
+            <div class="card-footer text-center">
+                <a class="m-0 small text-success card-link font-weight-bold" href="{% url 'exame:referencias_add' pk=exame.pk %}">Nova Referência <i class="fas fa-chevron-right"></i></a>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header py-4 bg-success d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-white">PLANOS</h6>
+            </div>
+            <div>
+                {% for plano in exame.planos.all %}
+                <div class="customer-message align-items-center d-flex justify-content-between">
+                    <a class="font-weight-bold" href="#">
+                        <div class="text-success message-title">{{plano}}</div>
+                        <div class="small text-gray-500 message-time font-weight-bold">R$ {{plano.preco}}</div>
+                    </a>
+                <div class="small text-gray-500 message-time font-weight-bold ml-auto"style="margin-right:30px;">
+                    <a href="{% url 'agenda:plano_up' pk=plano.pk %}" class="text-success"><i class="bi bi-pencil-square"></i></a>
+                    <a href="#" class="text-danger" type="button" data-toggle="modal" data-target="#exampleModalCenter{{plano.id}}"
+                       id="#modalCenter{{plano.id}}"><i class="bi bi-trash"></i></a>
+                </div>
+                </div>
+                <div class="modal fade" id="exampleModalCenter{{plano.id}}" tabindex="-1" role="dialog"
+                 aria-labelledby="exampleModalCenterTitlePlano" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger">
+                            <h5 class="modal-title text-white" id="exampleModalCenterTitlePlano">{{plano}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Deseja realmente deletar <strong class="text-danger">{{plano}}</strong> ?<br>
+                        </div>
+                        <div class="modal-footer">
+                            <form method="post" action="{% url 'agenda:plano_del' pk=plano.pk %}">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-success" data-dismiss="modal">Sair</button>
+                                <button type="submit" class="btn btn-outline-danger">Confirmar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                {% empty %}
+                <div class="customer-message align-items-center">
+                    <a class="font-weight-bold" href="{% url 'agenda:plano_add' pk=exame.pk %}">
+                        <div class="text-success message-title">Adicione os planos</div>
+                        <div class="small text-gray-500 message-time font-weight-bold"></div>
+                    </a>
+                </div>
+                {% endfor %}
+                <div class="card-footer text-center">
+                    <a class="m-0 small text-success card-link font-weight-bold" href="{% url 'agenda:plano_add' pk=exame.pk %}">Adicionar Plano <i
+                            class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

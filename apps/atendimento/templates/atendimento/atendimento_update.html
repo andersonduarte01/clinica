@@ -1,0 +1,150 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Atualizar Atendimento
+{% endblock %}
+{% block estilo %}
+{{ block.super }}
+<style>
+    .form-control:focus {
+        color: #000;
+        background-color: #ffffff;
+        border-color: #4cb061;
+        outline: 0
+    }
+
+.blockquote-footer::before {
+    content: ""
+}
+
+.info-paciente{
+    margin-top: 10px;
+}
+
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-md-12">
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <h5 class="h4 mb-0 font-weight-bold text-uppercase text-success text-center" style="margin-top: 8px;">Atualizar Atendimento</h5>
+                <hr>
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h6 class="h6 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">{{orcamento.paciente}}</h6>
+                    <h6 class="h6 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">{{orcamento.data_cadastro|date:"d/m/Y"}}</h6>
+                </div>
+                <hr>
+                <div class="row">
+                    <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente" ></div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:  {{orcamento.paciente.usuario}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">SEXO: {{orcamento.paciente.sexo}}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <hr>
+                <div class="row">
+                    {% for exame in orcamento.exame.all %}
+                    <div class="col-md-4 ">
+                        <div class="card exame-card" style="margin-bottom:10px; margin-top: 10px;">
+                            <div class="card-body" style="margin-top:-15px;">
+                                <p>
+                                <div class="text-success justify-content-between">
+                                    <i class="bi bi-check2-circle"></i> <span class="text-uppercase font-weight-bold">{{ exame.nome }}</span>
+                                    <div class="float-right">
+                                        <a href="{% url 'exame:exame_atendimento_update' pk=exame.pk %}" class="text-success">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="text-danger" data-toggle="modal" data-target="#exampleModalCenter{{ exame.pk }}">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="exampleModalCenter{{ exame.pk }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle{{ exame.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title font-weight-bold" id="exampleModalLongTitle{{ exame.pk }}">{{ exame.nome }}</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p class="text-dark">Deseja excluir <span class="text-danger">{{ exame.nome }}</span> definitivamente?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form method="post" action="{% url 'exame:exame_atendimento_del' pk=exame.pk %}">
+                                                            {% csrf_token %}
+                                                            <button type="button" class="btn btn-success" data-dismiss="modal">Sair</button>
+                                                            <button type="submit" class="btn btn-danger">Excluir</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </p>
+                                <footer>
+                                    {% for plano in exame.planos.all %}
+                                    <div class="text-succes">
+                                        <i class="bi bi-check2"></i> {{ plano.plano }}<br>
+                                        <i class="bi bi-check2"></i> R$ {{plano.preco}}
+                                    </div>
+                                    {% endfor %}
+                                </footer>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>VAZIO...</p>
+                    {% endfor %}
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="form-group col-md-4 text-success font-weight-bold">
+                        <label>Forma de Pagamento:</label> <br>
+                        <span class="font-italic text-secondary font-weight-normal">{{orcamento.forma_pagamento}}</span>
+                    </div>
+                    <div class="form-group col-md-4 text-success font-weight-bold">
+                        <label>Total:</label><br>
+                        <span class="font-italic text-secondary font-weight-normal">R$ {{orcamento.valor_total}}</span>
+                    </div>
+                    <div class="form-group col-md-4 text-success font-weight-bold">
+                        <label>Pagamento:</label><br>
+                        <span class="font-italic text-secondary font-weight-normal">{{orcamento.pagamento}}</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group col-md-12 text-success font-weight-bold">
+                        <label>Comentário:</label><br>
+                        <span class="font-italic text-secondary font-weight-normal">{{orcamento.comentario}}</span>
+                    </div>
+                <hr>
+                <div class="">
+                    <a href="{% url 'exame:exame_atendimento_add' pk=orcamento.pk %}" class="btn btn-success btn-block">Adicionar Exame</a>
+                    <a href="{% url 'atendimento:financeiro_update' pk=orcamento.pk %}" class="btn btn-success btn-block">Atualizar Financeiro</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function formatarCPF(cpf) {
+    cpf = cpf.replace(/[.-]/g, '');
+    return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
+}
+var cpf = "{{orcamento.paciente.cpf}}";
+var cpfFormatado = formatarCPF(cpf);
+
+document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
+</script>
+{% endblock %}

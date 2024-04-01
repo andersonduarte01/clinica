@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Gen's Diagnóstica">
+  <meta name="author" content="">
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon.png' %}">
+  <title>{% block titulo %}Gen's | Diagnóstica{% endblock %}</title>
+  {% block estilo %}
+  <link href="{% static 'alt/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'alt/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'alt/css/ruang-admin.min.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {% endblock %}
+  <style>
+.btn-link {
+    font-weight: 400;
+    color: #2aa012;
+    text-decoration: none
+}
+
+.btn-link:hover {
+    color: #0c3e0f;
+    text-decoration: underline
+}
+.topbar #sidebarToggleTop:hover {
+    background-color: #d4efd7
+}
+.topbar.navbar-light .navbar-nav .nav-item .nav-link {
+    color: #4CAF50;
+    transition: all .3s ease-in-out;
+    -webkit-transition: all .3s ease-in-out
+}
+
+.topbar.navbar-light .navbar-nav .nav-item .nav-link:hover {
+    color: #174915;
+    transition: all .3s ease-in-out;
+    -webkit-transition: all .3s ease-in-out
+}
+  </style>
+</head>
+<body id="page-top">
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav sidebar sidebar-light accordion" id="accordionSidebar">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'home:painel' %}">
+        <div class="sidebar-brand-icon">
+          <img src="{% static  'img/log.png'%}">
+        </div>
+      </a>
+      <hr class="sidebar-divider my-0">
+      <li class="nav-item">
+        <a class="nav-link text-success font-weight-bold" href="#">
+          <i class="fas fa-fw fa-tachometer-alt text-success"></i>
+          <span>Administrativo</span></a>
+      </li>
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading text-success">
+        funcionalidades
+      </div>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBootstrap"
+          aria-expanded="true" aria-controls="collapseBootstrap">
+          <i class="far fa-fw fa-user text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Pacientes</span>
+        </a>
+        <div id="collapseBootstrap" class="collapse" aria-labelledby="headingBootstrap" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'home:add' %}">Novo Paciente</a>
+            <a class="collapse-item text-success" href="{% url 'home:pacientes' %}">Pacientes</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseForm" aria-expanded="true"
+          aria-controls="collapseForm">
+          <i class="fab fa-fw fa-wpforms text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Exame</span>
+        </a>
+        <div id="collapseForm" class="collapse" aria-labelledby="headingForm" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            {% if user.usuario.adm %}
+            <a class="collapse-item text-success" href="{% url 'exame:exame_add' %}">Novo Exame</a>
+            {% endif %}
+            <a class="collapse-item text-success" href="{% url 'exame:exame_list' %}">Exames</a>
+            <a class="collapse-item text-success" href="{% url 'exame:exame_todos_lista' %}">Todos os Exames</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTable" aria-expanded="true"
+          aria-controls="collapseTable">
+          <i class="fas fa-fw fa-table text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Agenda</span>
+        </a>
+        <div id="collapseTable" class="collapse" aria-labelledby="headingTable" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'agenda:pesquisar_paciente' %}">Adicionar à fila</a>
+            <a class="collapse-item text-success" href="{% url 'agenda:ordem_chegada_lista' %}">Fila hoje</a>
+            <a class="collapse-item text-success" href="{% url 'agenda:ordem_chegada_calendario' %}">Fila por data</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTableA" aria-expanded="true"
+          aria-controls="collapseTable">
+          <i class="fas fa-fw bi bi-file-medical text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Atendimento</span>
+        </a>
+        <div id="collapseTableA" class="collapse" aria-labelledby="headingTable" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'atendimento:orcamento_lista' %}">Atendimentos</a>
+            <a class="collapse-item text-success" href="{% url 'home:buscar_paciente' %}">Novo Atendimento</a>
+            <a class="collapse-item text-success" href="#">Atendimentos por Data</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTableBusca" aria-expanded="true"
+          aria-controls="collapseTable">
+          <i class="fas fa-fw bi bi-search text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Buscas</span>
+        </a>
+        <div id="collapseTableBusca" class="collapse" aria-labelledby="headingTable" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'home:buscar_opcoes_paciente' %}">Buscar Paciente</a>
+            <a class="collapse-item text-success" href="{% url 'atendimento:buscar_orcamento' %}">Buscar Atendimento</a>
+            <a class="collapse-item text-success" href="{% url 'agenda:pesquisar_agendamento' %}">Buscar Agendamento</a>
+          </div>
+        </div>
+      </li>
+      <hr class="sidebar-divider">
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTable1" aria-expanded="true"
+          aria-controls="collapseTable">
+          <i class="far fa-fw fa-window-maximize" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Relatórios</span>
+        </a>
+        <div id="collapseTable1" class="collapse" aria-labelledby="headingTable" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'exame:pdf' pk=86 %}">Gerar PDF</a>
+            <a class="collapse-item text-success" href="datatables.html">DataTables</a>
+          </div>
+        </div>
+      </li>
+      <hr class="sidebar-divider">
+    </ul>
+    <!-- Sidebar -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <!-- TopBar -->
+        <nav class="navbar navbar-expand navbar-light bg-navbar topbar mb-4 static-top">
+          <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+            <i class="fa fa-bars" ></i>
+          </button>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-search fa-fw"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                aria-labelledby="searchDropdown">
+                <form class="navbar-search">
+                  <div class="input-group">
+                    <input type="text" class="form-control bg-light border-1 small" placeholder="Pesquisar"
+                      aria-label="Search" aria-describedby="basic-addon2" style="border-color: #3f51b5;">
+                    <div class="input-group-append">
+                      <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </li>
+            <div class="topbar-divider d-none d-sm-block"></div>
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <span class="ml-2 d-none d-lg-inline text-success"><strong>{{user}}</strong></span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <a class="dropdown-item text-success" href="#">
+                  <i class="fas fa-user fa-sm fa-fw mr-2"></i>
+                  Meu Perfil
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-success" href="javascript:void(0);" data-toggle="modal" data-target="#logoutModal">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i>
+                  Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <!-- Topbar -->
+
+        <!-- Container Fluid-->
+        <div class="container-fluid" id="container-wrapper">
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            {% block trilha %}
+            <h3 class="h3 mb-0 text-gray-800">Blank Page</h3>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="./">Home</a></li>
+              <li class="breadcrumb-item">Pages</li>
+              <li class="breadcrumb-item active" aria-current="page">Blank Page</li>
+            </ol>
+            {% endblock %}
+          </div>
+          {% for message in messages %}
+          <div class="col-sm-12">
+            <div {% if message.tags %} class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" {% endif %}>
+              {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+              {{message}}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+          {% block conteudo %}
+          {% endblock %}
+          <!-- Modal Logout -->
+          <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabelLogout"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabelLogout">Sair do Painel Administrativo!</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <p>Deseja sair do Painel Administrativo?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-success" data-dismiss="modal">Cancelar</button>
+                  <a href="{% url 'logout' %}" class="btn btn-success">Confirmar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!---Container Fluid-->
+      </div>
+      <!-- Footer -->
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>copyright &copy; <script> document.write(new Date().getFullYear()); </script> - Desenvolvido por
+              <b><a href="#" target="_blank">Anderson Duarte</a></b>
+            </span>
+          </div>
+        </div>
+      </footer>
+      <!-- Footer -->
+    </div>
+  </div>
+
+  <!-- Scroll to top -->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+   <script src="{% static 'alt/vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'alt/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'alt/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+  <script src="{% static 'alt/js/ruang-admin.min.js' %}"></script>
+  <script src="{% static 'alt/vendor/chart.js/Chart.min.js' %}"></script>
+  <script src="{% static 'alt/js/demo/chart-area-demo.js' %}"></script>
+  {% block script %}
+  {% endblock %}
+</body>
+</html>
