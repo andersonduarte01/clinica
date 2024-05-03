@@ -88,6 +88,11 @@ class OrdemChegadaLista(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return OrdemChegada.objects.filter(data=date.today())
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto['data'] = date.today()
+        return contexto
+
 
 class OrdemChegadaListaData(LoginRequiredMixin, TemplateView):
     template_name = 'agenda/ordem_chegada_lista.html'
@@ -95,9 +100,11 @@ class OrdemChegadaListaData(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
         dia = self.request.GET.get("data")
-        data = datetime.strptime(dia, '%Y-%m-%d')
+        data1 = datetime.strptime(dia, '%Y-%m-%d')
+        data = data1.date()
         atendimentos = OrdemChegada.objects.filter(data=data)
         contexto['ordem_chegada'] = atendimentos
+        contexto['data'] = data
         return contexto
 
 

@@ -1,0 +1,74 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Relatorio Diario
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+    .form-control:focus {
+    color: #000;
+    background-color: #ffffff;
+    border-color: #4cb061;
+    outline: 0
+}
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold">RELATÓRIO DIÁRIO</h4>
+<h6 class="h6 mb-0 text-success font-weight-bold text-uppercase"> {{atendimentos.0.data_cadastro}}</h6>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+          <div class="card-header mb-2">
+            <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h5 mb-0 font-weight-bold text-uppercase text-left" style="margin-top: 8px;">Atendimentos: {{total_atendimentos}}</h5>
+                    <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-right">Total: R$ {{total}}</h5>
+                </div>
+          </div>
+        </div>
+        {% for atendimento in atendimentos %}
+        <div class="card" class="mb-4">
+          <ul class="list-group list-group-flush">
+             <li class="list-group-item font-weight-bold">{{atendimento.paciente}}</li>
+             {% for exame in atendimento.exame.all %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-8">{{ exame }}</div>
+                        <div class="col-md-4 text-md-right">R$ {{ exame.planos.first.preco }}</div>
+                    </div>
+                </li>
+             {% endfor %}
+              <li class="list-group-item">
+                  <div class="row">
+                        <div class="col-md-8">Total</div>
+                        <div class="col-md-4 text-md-right font-weight-bold">R$ {{ atendimento.calcular_total }}</div>
+                    </div>
+              </li>
+          </ul>
+        </div>
+        <hr>
+        {% endfor %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-center">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primeira</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+    {% endif %}
+    <li class="page-item disabled"><a class="page-link" href="#">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a></li>
+    {% endif %}
+  </ul>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

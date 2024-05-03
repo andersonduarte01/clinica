@@ -1,0 +1,46 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Buscar Periodo
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+    .form-control:focus {
+    color: #000;
+    background-color: #ffffff;
+    border-color: #4cb061;
+    outline: 0
+}
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold text-uppercase">Buscar relatório por período</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+          <div class="card-header mb-2">
+            <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">Atendimentos: {{atendimentos.count}}</h5>
+                    <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">Total: R${{total}}</h5>
+                </div>
+          </div>
+          <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <label for="inicio">Data Inicial:</label>
+                <input type="date" id="inicio" name="inicio">
+
+                <label for="final">Data Final:</label>
+                <input type="date" id="final" name="final">
+
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

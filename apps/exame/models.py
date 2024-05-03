@@ -24,8 +24,10 @@ class Exame(models.Model):
     padrao = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
 
+
     def __str__(self):
         return self.nome
+
 
     def save(self, *args, **kwargs):
         if not self.codigo:  # Se o código não estiver definido

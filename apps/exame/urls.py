@@ -11,6 +11,8 @@ urlpatterns = [
     path('deletar/<int:pk>/', views.ExameDel.as_view(), name='exame_del'),
     path('atendimento/<int:pk>/deletar/', views.ExameAtendimentoDel.as_view(), name='exame_atendimento_del'),
     path('lista/', views.ExamesLista.as_view(), name='exame_list'),
+    path('<str:data>/lista/', views.ExamesListaData.as_view(), name='exame_list_data'),
+    path('realizados/<str:data>/', views.ExamesListaDataRealizados.as_view(), name='exame_realizados_data'),
     path('<int:pk>/informacoes/', views.ExameDetalhes.as_view(), name='exame_detail'),
     path('nova/referencias/<int:pk>/', views.ReferenciaADD.as_view(), name='referencias_add'),
     path('referencia/<int:pk>/atualizar/', views.ReferenciaUp.as_view(), name='referencia_update'),
@@ -23,12 +25,12 @@ urlpatterns = [
     path('valor/remover/<int:pk>/', views.ValorDEL.as_view(), name='valor_del'),
 
     # temporario
-    path('todos/lista/', views.ExamesTodosLista.as_view(), name='exame_todos_lista'),
+    path('mostrar/todos/lista/', views.ExamesTodosLista.as_view(), name='exame_todos_lista'),
     path('<int:pk>/pdf/', views.criar_laudo_medico, name='pdf'),
 
     # area medica #
     #path('area/restrita/<int:pk>/atualizar/', views.ExameUpdateMedicView.as_view(), name='exame_medico_update'),
     #path('area/restrita/<int:pk>/visualizar/', views.ExameMedicView.as_view(), name='exame_medico_ver'),
-    path('area/restrita/<int:pk>/visualizar/', views.realizar_exame, name='exame_medico_ver'),
+    path('area/restrita/<int:pk>/realizar/', views.realizar_exame, name='exame_medico_ver'),
 
 ]

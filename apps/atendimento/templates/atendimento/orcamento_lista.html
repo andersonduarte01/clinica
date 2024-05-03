@@ -20,7 +20,7 @@ Gen's | Lista de Orçamentos
             <th class="text-center">Forma_de_Pagamento</th>
             <th class="text-center">Total</th>
             <th class="text-center">Pago</th>
-            <th class="text-center">Editar</th>
+            <th class="text-center">Ver/Editar</th>
           </tr>
           </thead>
           <tfoot>
@@ -40,7 +40,12 @@ Gen's | Lista de Orçamentos
             <td class="text-center">{{exame.valor_total}}</td>
             <td class="text-center">{{exame.pagamento}}</td>
             <td class="text-center">
-              <a href="{% url 'atendimento:orcamento_update' pk=exame.pk %}">Edit</a>
+              <a href="{% url 'atendimento:ver_atendimento' pk=exame.pk %}" class="text-success">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'atendimento:orcamento_update' pk=exame.pk %}" class="text-primary">
+                <i class="bi bi-pencil-square"></i>
+              </a>
             </td>
           </tr>
           {% empty %}

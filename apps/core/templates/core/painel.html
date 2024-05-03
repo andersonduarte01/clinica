@@ -1,1 +1,148 @@
 {% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Painel Administrativo
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+
+{% block estilo %}
+{{block.super}}
+ <style>
+    a.text-secondary:hover {
+      color: #28a745 !important;
+    }
+  </style>
+{% endblock %}
+{% block conteudo %}
+<div class="row mb-3">
+    <!-- teste -->
+    <div class="col-md-12">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <a href="{% url 'agenda:pesquisar_paciente' %}" class="text-decoration-none text-secondary font-weight-bold">
+                        <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Adicionar a fila
+                            <span class="badge badge-success badge-pill">
+                                <i class="bi bi-person-add text-white"></i>
+                            </span>
+                        </li>
+                    </ul>
+                    </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <a href="{% url 'agenda:ordem_chegada_lista' %}" class="text-decoration-none text-secondary font-weight-bold">
+                        <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Aguardando na fila
+                            <span class="badge badge-success badge-pill">{{fila_aguardando}}</span>
+                        </li>
+                    </ul>
+                    </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <a href="{% url 'agenda:ordem_chegada_lista' %}" class="text-decoration-none text-secondary font-weight-bold">
+                        <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Pacientes atendidos
+                            <span class="badge badge-success badge-pill">{{fila_atendido}}</span>
+                        </li>
+                    </ul>
+                    </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                 <a href="#" class="text-decoration-none text-secondary font-weight-bold">
+                     <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Pesquisar Exame</span>
+                                <div class="mt-2 mb-0 text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">Pesquisar pelo número do exame</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill"><i class="bi bi-search"></i></span>
+                        </li>
+                    </ul>
+                 </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'exame:exame_realizados_data' data=data %}" class="text-decoration-none text-secondary font-weight-bold">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Exames</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">{{data}}</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{qtd_exames_realizados}}</span>
+                        </li>
+                    </ul>
+                  </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'exame:exame_list_data' data=data %}" class="text-decoration-none text-secondary font-weight-bold">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Exames (Aguardando)</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">{{data}}</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{qtd_exames}}</span>
+                        </li>
+                    </ul>
+                  </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Atendimento(s) Diário</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2">{{data}}</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{ated_diario}}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Atendimento(s) Semanal</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2">({{inicio|date:"d/m/Y"}} a {{final|date:"d/m/Y"}})</span>
+                                </div>
+
+                            </div>
+                            <span class="badge badge-success badge-pill">{{atendimentos}}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Atendimento(s) Mensal</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2">({{primeiro|date:"d/m/Y"}} a {{ultimo|date:"d/m/Y"}})</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{atendimentos_mes}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+

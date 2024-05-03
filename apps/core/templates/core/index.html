@@ -1,0 +1,150 @@
+{% extends 'padrao/base.html' %}
+{% load static %}
+{% block estilo %}
+<style>
+.slider-area2 {
+    /* background-image: url(../img/hero/hero2.png); */
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+.slider-area {
+    position: relative;
+    background-image: url({% static 'img/hero/h1_hero3.png' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+</style>
+{% endblock %}
+{% block conteudo %}
+<div class="slider-area slider-area2">
+            <div class="slider-active dot-style">
+                <!-- Slider Single -->
+                <div class="single-slider  d-flex align-items-center slider-height2">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-xl-7 col-lg-8 col-md-10 ">
+                             <div class="hero-wrapper">
+                                <div class="hero__caption">
+                                    <h1 data-animation="fadeInUp" data-delay=".3s">Cuide da sua saúde</h1>
+                                    <p data-animation="fadeInUp" data-delay=".6s">Seu laboratório de análises clínicas
+                                        <br>  de excelência.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="about-area2 section-padding40">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 col-md-12">
+                <!-- about-img -->
+                <div class="about-img ">
+                    <img src="{% static 'img/gallery/about.png' %}" alt="">
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-12">
+                <div class="about-caption">
+                    <p class="pera-top mb-40">Bem vindo à Gen's Diagnóstica!</p>
+                    <p class="pera-bottom mb-20">
+                        Estamos comprometidos em colocar sua saúde em primeiro lugar.
+                        Com anos de experiência e uma equipe dedicada de profissionais,
+                        oferecemos uma ampla gama de serviços de análises clínicas para atender
+                        às suas necessidades de saúde.</p>
+                    <p class="pera-bottom mb-20">
+                        Nosso laboratório utiliza tecnologia de ponta para garantir resultados
+                        precisos e confiáveis. Desde exames de rotina até testes especializados,
+                        estamos aqui para fornecer informações valiosas que ajudam você a entender
+                        e gerenciar sua saúde de forma eficaz.
+                    </p>
+                    <p class="pera-bottom mb-20">
+                        Explore nosso site para saber mais sobre nossos serviços, equipe e valores.
+                        Estamos ansiosos para fazer parte de sua jornada de saúde e bem-estar.
+                        Entre em contato hoje mesmo e descubra como podemos ajudar você a viver uma
+                        vida mais saudável e feliz.
+                    </p>
+             </div>
+         </div>
+     </div>
+ </div>
+</div>
+
+<section class="wantToWork-area section-bg3" data-background="{% static 'img/gallery/section_bg01.png' %}">
+    <div class="container">
+        <div class="wants-wrapper w-padding2">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-xl-7 col-lg-9 col-md-8">
+                    <div class="wantToWork-caption wantToWork-caption2">
+                        <h2>Priorize sua Saúde</h2>
+                        <p>
+                            "Exercícios e alimentação saudável são a base; os exames
+                            clínicos são a bússola que mantém sua jornada na direção certa."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="service-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-6">
+                <div class="single-cat text-center mb-50">
+                    <div class="cat-icon">
+                        <img src="{% static 'img/icon/exame1.png' %}" alt="">
+                    </div>
+                    <div class="cat-cap">
+                        <h5><a href="services.html">Exames Clinicos</a></h5>
+                        <p>
+                            Exames clínicos regulares são o alicerce de uma
+                            saúde sólida, permitindo intervenções precoces e
+                            aprimoramento do autocuidado.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-6">
+                <div class="single-cat text-center mb-50">
+                    <div class="cat-icon">
+                        <img src="{% static 'img/icon/habitos.png' %}" alt="">
+                    </div>
+                    <div class="cat-cap">
+                        <h5><a href="services.html">Alimentação Saudável</a></h5>
+                        <p>
+                            A escolha por uma alimentação saudável é um investimento
+                            no bem-estar presente e futuro, promovendo saúde e
+                            prevenindo doenças.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-6">
+                <div class="single-cat text-center mb-50">
+                    <div class="cat-icon">
+                        <img src="{% static 'img/icon/exercicios.png' %}" alt="">
+                    </div>
+                    <div class="cat-cap">
+                        <h5><a href="services.html">Exercícios Físicos</a></h5>
+                        <p>
+                            Os exercícios físicos são a <br>
+                            chave para um corpo forte, uma<br>
+                            mente saudável e uma <br>vida equilibrada.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

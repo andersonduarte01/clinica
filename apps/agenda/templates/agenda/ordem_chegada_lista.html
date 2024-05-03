@@ -41,12 +41,20 @@ Gen's | Lista de Atendimentos
                 <td class="text-center text-danger">{{atendimento.status_atendido}}</td>
               {% endif %}
             <td class="text-center">
+              {% if atendimento.status_atendido == 'CANCELADO' %}
               <a href="{% url 'agenda:ordem_chegada_up' pk=atendimento.pk %}" class="text-success" data-toggle="tooltip" data-placement="top" title="Finalizar atendimento">
                 <i class="bi bi-pencil"></i>
               </a>
-              {% if atendimento.status_atendido == 'ATENDIDO' or atendimento.status_atendido == 'CANCELADO' %}
-                <i class="bi bi-check2"></i>
+                <i class="bi bi-x text-danger"></i>
+              {% elif atendimento.status_atendido == 'ATENDIDO'%}
+                <a href="{% url 'atendimento:ver_atendimento1' nome=atendimento data=data %}" class="text-success" data-toggle="tooltip" data-placement="top" title="Visualizar atendimento">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <i class="bi bi-check2-all text-primary"></i>
               {% else %}
+              <a href="{% url 'agenda:ordem_chegada_up' pk=atendimento.pk %}" class="text-success" data-toggle="tooltip" data-placement="top" title="Finalizar atendimento">
+                <i class="bi bi-pencil"></i>
+              </a>
               <a href="{% url 'atendimento:ordem_orcamento' pk=atendimento.nome_paciente.pk id=atendimento.id %}" class="text-primary" data-toggle="tooltip" data-placement="top" title="Fazer orçamento do paciente">
                 <i class="bi bi-clipboard2-pulse"></i>
               </a>

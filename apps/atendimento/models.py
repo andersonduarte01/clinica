@@ -16,8 +16,6 @@ class OrcamentoExames(models.Model):
     PAGAMENTO = [
         ('PENDENTE', 'PENDENTE'),
         ('PAGO', 'PAGO'),
-        ('PARCIAL', 'PARCIAL'),
-        ('OUTRO', 'OUTRO'),
     ]
     paciente = models.ForeignKey(Usuario, verbose_name='Paciente', on_delete=models.DO_NOTHING,
                                     related_name='r_paciente')
@@ -38,3 +36,35 @@ class OrcamentoExames(models.Model):
             plano = exame.planos.first()
             total += plano.preco
         return total
+
+    @classmethod
+    def calcular_total_por_data_e_pagamento(cls, data_cadastro, pagamento):
+        total = Decimal('0.00')
+        orcamentos = cls.objects.filter(data_cadastro=data_cadastro, pagamento=pagamento)
+        for orcamento in orcamentos:
+            total += orcamento.calcular_total()
+        return total, orcamentos
+
+    @classmethod
+    def calcular_total_por_periodo(cls, data_inicio, data_fim):
+        total = Decimal('0.00')
+        if data_inicio == data_fim:
+            orcamentos = cls.objects.filter(data_cadastro=data_inicio)
+        else:
+            orcamentos = cls.objects.filter(data_cadastro__range=(data_inicio, data_fim))
+
+        for orcamento in orcamentos:
+            total += orcamento.calcular_total()
+        return total, orcamentos
+
+    @classmethod
+    def total_atendimentos_diarios(cls):
+        return cls.objects.filter(data_cadastro=date.today()).count()
+
+    @classmethod
+    def total_atendimentos_semanal(cls):
+        return cls.objects.filter(data_cadastro=date.today()).count()
+
+    @classmethod
+    def algum_exame_realizado(cls, orcamento):
+        return orcamento.exame.filter(status_exame='REALIZADO').exists()

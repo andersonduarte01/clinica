@@ -53,7 +53,7 @@
       </a>
       <hr class="sidebar-divider my-0">
       <li class="nav-item">
-        <a class="nav-link text-success font-weight-bold" href="#">
+        <a class="nav-link text-success font-weight-bold" href="{% url 'home:painel' %}">
           <i class="fas fa-fw fa-tachometer-alt text-success"></i>
           <span>Administrativo</span></a>
       </li>
@@ -71,6 +71,19 @@
           <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item text-success" href="{% url 'home:add' %}">Novo Paciente</a>
             <a class="collapse-item text-success" href="{% url 'home:pacientes' %}">Pacientes</a>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBootstrapFun"
+          aria-expanded="true" aria-controls="collapseBootstrapFun">
+          <i class="far fa-fw fa-user text-success" style="color:green;"></i>
+          <span class="text-success font-weight-bold">Funcionários</span>
+        </a>
+        <div id="collapseBootstrapFun" class="collapse" aria-labelledby="headingBootstrap" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item text-success" href="{% url 'home:add_funcionario' %}">Novo Funcionário</a>
+            <a class="collapse-item text-success" href="{% url 'home:funcionarios' %}">Funcionários</a>
           </div>
         </div>
       </li>
@@ -141,8 +154,9 @@
         </a>
         <div id="collapseTable1" class="collapse" aria-labelledby="headingTable" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item text-success" href="{% url 'exame:pdf' pk=86 %}">Gerar PDF</a>
-            <a class="collapse-item text-success" href="datatables.html">DataTables</a>
+            <a class="collapse-item text-success" href="{% url 'atendimento:relatorio_diario' %}">Diário</a>
+            <a class="collapse-item text-success" href="{% url 'atendimento:relatorio_semanal' %}">Semanal</a>
+            <a class="collapse-item text-success" href="{% url 'atendimento:relatorio_periodo' %}">Definir Período</a>
           </div>
         </div>
       </li>

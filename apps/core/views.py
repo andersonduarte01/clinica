@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
@@ -9,16 +11,76 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, FormView
 from .models import Usuario, Endereco
-from .forms import CriarUsuarioForm, EnderecoForm
+from .forms import CriarUsuarioForm, EnderecoForm, CriarFuncionarioForm
 from .permissoes import PermissaoFuncionariosMixin
+from ..agenda.models import OrdemChegada
+from ..atendimento.models import OrcamentoExames
+from ..exame.models import Exame
 
 
 class Home(TemplateView):
-    template_name = 'core/inicio.html'
+    template_name = 'core/index.html'
+
+
+class Sobre(TemplateView):
+    template_name = 'core/sobre.html'
+
+
+class Servicos(TemplateView):
+    template_name = 'core/servicos.html'
+
+
+class Blog(TemplateView):
+    template_name = 'core/blog.html'
+
+
+class Contato(TemplateView):
+    template_name = 'core/contato.html'
 
 
 class Painel(PermissaoFuncionariosMixin, TemplateView):
     template_name = 'core/painel.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        #DATA
+        today = date.today()
+        inicio_semana = today - timedelta(days=today.weekday())
+        final_semana = inicio_semana + timedelta(days=6)
+        primeiro_dia = date(today.year, today.month, 1)
+        next_month = today.replace(day=28) + timedelta(days=4)
+        ultimo_dia = next_month - timedelta(days=next_month.day)
+        #ATENDIMENTOS
+        total, atendimentos = OrcamentoExames.calcular_total_por_periodo(data_inicio=inicio_semana,
+                                                                         data_fim=final_semana)
+
+        total1, atendimentos_mes = OrcamentoExames.calcular_total_por_periodo(data_inicio=primeiro_dia,
+                                                                         data_fim=ultimo_dia)
+        #FILA
+        fila_total = OrdemChegada.fila_dia_total(today)
+        fila_aguardando = OrdemChegada.fila_dia_aguardando(today)
+        fila_atendido = OrdemChegada.fila_dia_atendido(today)
+
+        #Exames
+        exames_aguardando = Exame.objects.filter(data_cadastro__date=today, status_exame='AGUARDANDO').count
+        exames_realizados = Exame.objects.filter(data_cadastro__date=today, status_exame='REALIZADO').count
+
+        contexto['ated_diario'] = OrcamentoExames.total_atendimentos_diarios
+        contexto['data'] = today
+        contexto['total'] = total
+        contexto['total1'] = total1
+        contexto['inicio'] = inicio_semana
+        contexto['final'] = final_semana
+        contexto['primeiro'] = primeiro_dia
+        contexto['ultimo'] = ultimo_dia
+        contexto['atendimentos'] = atendimentos.count
+        contexto['atendimentos_mes'] = atendimentos_mes.count
+        contexto['fila_total'] = fila_total
+        contexto['fila_aguardando'] = fila_aguardando
+        contexto['fila_atendido'] = fila_atendido
+        contexto['qtd_exames'] = exames_aguardando
+        contexto['qtd_exames_realizados'] = exames_realizados
+        return contexto
 
 
 class Cadastrar(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -31,6 +93,25 @@ class Cadastrar(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         pessoa = form.save(commit=False)
         cpf = pessoa.cpf.replace('.', '').replace('-', '')
         user = User.objects.create_user(username=cpf, password=form.cleaned_data['password1'])
+        pessoa.usuario = user
+        pessoa.paciente = True
+        pessoa.save()
+        self.user_id = user.id
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('home:endereco', kwargs={'id': self.user_id})
+
+
+class CadastrarFuncionario(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Usuario
+    form_class = CriarFuncionarioForm
+    template_name = 'core/cadastrar_funcionario.html'
+    success_message = 'Funcionário cadastrado com sucesso!'
+
+    def form_valid(self, form):
+        pessoa = form.save(commit=False)
+        user = User.objects.create_user(username=form.cleaned_data['usuario'], password=form.cleaned_data['password1'])
         pessoa.usuario = user
         pessoa.paciente = True
         pessoa.save()
@@ -78,6 +159,16 @@ class Pacientes(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Usuario.objects.filter(funcionario=False, status=True, adm=False, doutor=False).order_by('nome')
+
+
+class Funcionarios(LoginRequiredMixin, ListView):
+    model = Usuario
+    template_name = 'core/funcionarios.html'
+    context_object_name = 'pacientes'
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Usuario.objects.filter(status=True, paciente=False).order_by('nome')
 
 
 class BuscarAtendimentoPaciente(LoginRequiredMixin, TemplateView):
@@ -222,4 +313,3 @@ class AtualizarSenha(LoginRequiredMixin, FormView):
         paciente = Usuario.objects.get(usuario=user)
         contexto['paciente'] = paciente
         return contexto
-

@@ -53,3 +53,15 @@ class OrdemChegada(models.Model):
     def __str__(self):
         return self.nome_paciente.nome
 
+    @classmethod
+    def fila_dia_aguardando(cls, data):
+        return cls.objects.filter(data=data, status_atendido='AGUARDANDO').count()
+
+    @classmethod
+    def fila_dia_atendido(cls, data):
+        return cls.objects.filter(data=data, status_atendido='ATENDIDO').count()
+
+    @classmethod
+    def fila_dia_total(cls, data):
+        return cls.objects.filter(data=data).count()
+

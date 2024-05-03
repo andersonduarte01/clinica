@@ -23,6 +23,9 @@ class OrcamentoFinanceiroForm(forms.ModelForm):
         fields = ('forma_pagamento', 'valor_total', 'pagamento', 'comentario')
 
 
+class DateRangeForm(forms.Form):
+    data_inicial = forms.DateField(label='Data Inicial', widget=forms.DateInput(attrs={'type': 'date'}))
+    data_final = forms.DateField(label='Data Final', widget=forms.DateInput(attrs={'type': 'date'}))
 
 class OrcamentoFormUpdate(forms.ModelForm):
     exames = Exame.objects.filter(padrao=True)

@@ -1,0 +1,78 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Funcionários
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold">LISTA DE FUNCIONÁRIOS</h4>
+{% endblock %}
+{% block conteudo %}
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card mb-4">
+      <div class="table-responsive p-3">
+        <table class="table align-items-center table-flush table-hover" id="dataTableHover">
+          <thead class="bg-success">
+          <tr class="text-uppercase text-white">
+            <th>Nome</th>
+            <th class="text-center">Função</th>
+            <th class="text-center">Cpf</th>
+            <th class="text-center">Perfil</th>
+          </tr>
+          </thead>
+          <tfoot>
+          <tr>
+            <th class="text-uppercase text-success">Nome</th>
+            <th class="text-uppercase text-success text-center">Função</th>
+            <th class="text-uppercase text-success text-center">Cpf</th>
+            <th class="text-uppercase text-success text-center">Perfil</th>
+          </tr>
+          </tfoot>
+          <tbody>
+          {% for paciente in pacientes %}
+            <tr>
+              <td>{{ paciente.nome }}</td>
+              <td class="text-center">
+                {% if paciente.funcionario %}
+                  Atendente
+                {% elif paciente.adm %}
+                  Administrador
+                {% elif paciente.doutor %}
+                  Médico
+                {% endif %}
+              </td>
+              <td class="text-center">{{ paciente.cpf }}</td>
+              <td class="text-center">
+                <a href="{% url 'home:perfil' pk=paciente.pk %}" class="text-success"><i class="bi bi-box-arrow-in-right"></i></a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-danger">Sem pacientes</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Paginação -->
+<div class="d-flex justify-content-center">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primeira</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+    {% endif %}
+    <li class="page-item disabled"><a class="page-link" href="#">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a></li>
+    {% endif %}
+  </ul>
+</div>
+
+{% endblock %}

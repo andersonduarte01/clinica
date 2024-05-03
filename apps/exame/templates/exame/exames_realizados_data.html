@@ -1,0 +1,96 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Exames Realizados
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold">LISTA DE EXAMES REALIZADOS</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card mb-4">
+      <div class="table-responsive p-3">
+        <table class="table align-items-center table-flush table-hover" id="dataTableHover">
+          <thead class="bg-success">
+          <tr class="text-uppercase text-white">
+            <th>Código</th>
+            <th>Nome</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Atualizar</th>
+            {% if user.usuario.adm %}
+            <th class="text-center">Editar/Excluir</th>
+            {% endif %}
+          </tr>
+          </thead>
+          <tfoot>
+          <tr>
+            <th class="text-uppercase text-success">Código</th>
+            <th class="text-uppercase text-success">Nome</th>
+            <th class="text-uppercase text-success text-center">Status</th>
+            <th class="text-uppercase text-success text-center">Atualizar</th>
+            {% if user.usuario.adm %}
+            <th class="text-uppercase text-success text-center">Editar/Excluir</th>
+            {% endif %}
+          </tr>
+          </tfoot>
+          <tbody>
+          {% for exame in exames %}
+            <tr>
+              <td>{{exame.codigo}}</td>
+              <td>{{exame}}</td>
+              <td class="text-center">
+                {{exame.status_exame}}
+              </td>
+              <td class="text-center">
+                <a href="{% url 'exame:exame_medico_ver' pk=exame.pk %}" class="text-decoration-none text-primary font-weight-bold">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+              </td>
+              {% if user.usuario.adm %}
+              <td class="text-center">
+                <a href="{% url 'exame:exame_detail' pk=exame.pk %}" class="text-success">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+                <!-- Button trigger modal -->
+<a href="#" class="text-danger" data-toggle="modal" data-target="#exampleModalCenter{{exame.pk}}">
+  <i class="bi bi-trash"></i>
+</a>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter{{exame.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle{{exame.pk}}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-uppercase text-success font-weight-bold" id="exampleModalLongTitle{{exame.pk}}">{{exame}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Deseja excluir <span class="text-danger">{{exame}}</span> definitivamente?</p>
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'exame:exame_del' pk=exame.pk %}">
+          {% csrf_token %}
+          <button type="button" class="btn btn-success" data-dismiss="modal">Sair</button>
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+              </td>
+              {% endif %}
+            </tr>
+          {% empty %}
+          <p class="text-danger">Sem exames...</p>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

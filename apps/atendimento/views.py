@@ -1,5 +1,6 @@
+from django.utils.datetime_safe import datetime
 import json
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -8,13 +9,12 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, UpdateView, TemplateView
+from django.views.generic import CreateView, ListView, UpdateView, TemplateView, FormView
 
 from ..agenda.models import OrdemChegada
 from ..atendimento.models import OrcamentoExames
 from ..exame.models import *
 from .forms import OrcamentoForm, OrcamentoFinanceiroForm
-from ..exame.forms import *
 from ..exame.exame_create import objeto_exame
 # Create your views here.
 
@@ -178,4 +178,103 @@ class AtendimentoView(LoginRequiredMixin, TemplateView):
         contexto = super().get_context_data(**kwargs)
         orcamento = get_object_or_404(OrcamentoExames, pk=self.kwargs['pk'])
         contexto['orcamento'] = orcamento
+        return contexto
+
+
+class AtendimentoView1(LoginRequiredMixin, TemplateView):
+    template_name = 'atendimento/ver_atendimento.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        paciente = Usuario.objects.get(nome=self.kwargs['nome'])
+        orcamento = get_object_or_404(OrcamentoExames, paciente=paciente, data_cadastro=self.kwargs['data'])
+        exame_realizado = OrcamentoExames.algum_exame_realizado(orcamento)
+        contexto['orcamento'] = orcamento
+        contexto['exame_realizado'] = exame_realizado
+        return contexto
+
+
+class RelatorioDiario(LoginRequiredMixin, ListView):
+    model = OrcamentoExames
+    template_name = 'atendimento/diario.html'
+    context_object_name = 'atendimentos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        total, atendimentos = OrcamentoExames.calcular_total_por_data_e_pagamento(data_cadastro=date.today(), pagamento='PAGO')
+        return atendimentos
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        total, atendimentos1 = OrcamentoExames.calcular_total_por_data_e_pagamento(data_cadastro=date.today(), pagamento='PAGO')
+        contexto['total_atendimentos'] = self.get_queryset().count()
+        contexto['total'] = total
+        return contexto
+
+
+class RelatorioDSemanal(LoginRequiredMixin, ListView):
+    model = OrcamentoExames
+    template_name = 'atendimento/semanal.html'
+    context_object_name = 'atendimentos'
+    paginate_by = 5
+
+    def get_queryset(self):
+        today = date.today()
+        inicio_semana = today - timedelta(days=today.weekday())
+        final_semana = inicio_semana + timedelta(days=6)
+        total, atendimentos = OrcamentoExames.calcular_total_por_periodo(data_inicio=inicio_semana,
+                                                                         data_fim=final_semana)
+        return atendimentos.order_by('-data_cadastro')
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        today = date.today()
+        inicio_semana = today - timedelta(days=today.weekday())
+        final_semana = inicio_semana + timedelta(days=6)
+        total, atendimentos = OrcamentoExames.calcular_total_por_periodo(data_inicio=inicio_semana,
+                                                                         data_fim=final_semana)
+        contexto['total'] = total
+        contexto['total_atendimentos'] = self.get_queryset().count()
+        contexto['inicio'] = inicio_semana
+        contexto['final'] = final_semana
+        return contexto
+
+
+class RelatorioPeriodo(LoginRequiredMixin, ListView):
+    model = OrcamentoExames
+    template_name = 'atendimento/periodo.html'
+    context_object_name = 'atendimentos'
+    paginate_by = 10
+
+    def get_queryset(self):
+        query = self.request.GET.get("inicio")
+        query1 = self.request.GET.get("final")
+
+        if query and query1:
+            data_inicio = datetime.strptime(query, "%Y-%m-%d").date()
+            data_fim = datetime.strptime(query1, "%Y-%m-%d").date()
+
+            if data_inicio > data_fim:
+                return OrcamentoExames.objects.none()
+
+            return OrcamentoExames.objects.filter(data_cadastro__range=(data_inicio, data_fim)).order_by('-data_cadastro')
+        else:
+            return OrcamentoExames.objects.none()
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(*kwargs)
+        query = self.request.GET.get("inicio")
+        query1 = self.request.GET.get("final")
+        total = None
+        data_inicio = None
+        data_fim = None
+        if query and query1:
+            data_inicio = datetime.strptime(query, "%Y-%m-%d").date()
+            data_fim = datetime.strptime(query1, "%Y-%m-%d").date()
+            total, atendimentos = OrcamentoExames.calcular_total_por_periodo(data_inicio=data_inicio,
+                                                                         data_fim=data_fim)
+        contexto['inicio'] = data_inicio
+        contexto['final'] = data_fim
+        contexto['atendimentos_total'] = self.get_queryset().count()
+        contexto['total'] = total
         return contexto
