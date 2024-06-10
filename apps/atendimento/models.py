@@ -40,7 +40,7 @@ class OrcamentoExames(models.Model):
     @classmethod
     def calcular_total_por_data_e_pagamento(cls, data_cadastro, pagamento):
         total = Decimal('0.00')
-        orcamentos = cls.objects.filter(data_cadastro=data_cadastro, pagamento=pagamento)
+        orcamentos = cls.objects.filter(data_cadastro=data_cadastro, pagamento=pagamento).order_by('id')
         for orcamento in orcamentos:
             total += orcamento.calcular_total()
         return total, orcamentos

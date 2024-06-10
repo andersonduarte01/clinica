@@ -61,6 +61,7 @@
       <div class="sidebar-heading text-success">
         funcionalidades
       </div>
+      {% if user.is_authenticated and user.usuario.funcionario or user.usuario.adm %}
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBootstrap"
           aria-expanded="true" aria-controls="collapseBootstrap">
@@ -74,6 +75,7 @@
           </div>
         </div>
       </li>
+      {% if user.is_authenticated and user.usuario.adm %}
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBootstrapFun"
           aria-expanded="true" aria-controls="collapseBootstrapFun">
@@ -87,6 +89,7 @@
           </div>
         </div>
       </li>
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseForm" aria-expanded="true"
           aria-controls="collapseForm">
@@ -127,7 +130,7 @@
           <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item text-success" href="{% url 'atendimento:orcamento_lista' %}">Atendimentos</a>
             <a class="collapse-item text-success" href="{% url 'home:buscar_paciente' %}">Novo Atendimento</a>
-            <a class="collapse-item text-success" href="#">Atendimentos por Data</a>
+            <a class="collapse-item text-success" href="{% url 'atendimento:relatorio_periodo' %}">Atendimentos por Data</a>
           </div>
         </div>
       </li>
@@ -161,6 +164,7 @@
         </div>
       </li>
       <hr class="sidebar-divider">
+      {% endif %}
     </ul>
     <!-- Sidebar -->
     <div id="content-wrapper" class="d-flex flex-column">

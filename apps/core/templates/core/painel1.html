@@ -22,6 +22,7 @@ Gen's | Painel Administrativo
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
+                {% if user.is_authenticated and user.usuario.funcionario or user.usuario.adm %}
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
                     <a href="{% url 'agenda:pesquisar_paciente' %}" class="text-decoration-none text-secondary font-weight-bold">
                         <ul class="list-group">
@@ -54,6 +55,8 @@ Gen's | Painel Administrativo
                     </ul>
                     </a>
                 </div>
+                {% endif %}
+                {% if user.is_authenticated and user.usuario.doutor or user.usuario.adm %}
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
                  <a href="{% url 'exame:pesquisar_exame' %}" class="text-decoration-none text-secondary font-weight-bold">
                      <ul class="list-group custom-list-group">
@@ -99,7 +102,10 @@ Gen's | Painel Administrativo
                     </ul>
                   </a>
                 </div>
+                {% endif %}
+                {% if user.is_authenticated and user.usuario.paciente or user.usuario.adm %}
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'atendimento:relatorio_diario' %}" class="text-decoration-none text-secondary font-weight-bold">
                     <ul class="list-group custom-list-group">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
@@ -111,8 +117,10 @@ Gen's | Painel Administrativo
                             <span class="badge badge-success badge-pill">{{ated_diario}}</span>
                         </li>
                     </ul>
+                  </a>
                 </div>
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'atendimento:relatorio_semanal' %}" class="text-decoration-none text-secondary font-weight-bold">
                     <ul class="list-group custom-list-group">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
@@ -125,6 +133,7 @@ Gen's | Painel Administrativo
                             <span class="badge badge-success badge-pill">{{atendimentos}}</span>
                         </li>
                     </ul>
+                  </a>
                 </div>
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
                     <ul class="list-group custom-list-group">
@@ -139,6 +148,7 @@ Gen's | Painel Administrativo
                         </li>
                     </ul>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

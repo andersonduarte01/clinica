@@ -3,8 +3,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-handler400 = 'apps.core.views.Erro400'
-handler500 = 'apps.core.views.Erro500'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apps.core.urls', namespace='inicio')),
