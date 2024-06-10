@@ -322,3 +322,7 @@ class AtualizarSenha(LoginRequiredMixin, FormView):
 
 class Erro400(TemplateView):
     template_name = 'core/erro400.html'
+
+
+class Erro500(TemplateView):
+    template_name = 'core/erro500.html'

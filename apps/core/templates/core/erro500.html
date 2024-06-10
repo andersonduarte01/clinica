@@ -1,0 +1,49 @@
+{% extends 'padrao/base.html' %}
+{% load static %}
+{% block estilo %}
+{% block titulo %}
+ERRO 500
+{% endblock %}
+<style>
+.slider-area2 {
+    /* background-image: url(../img/hero/hero2.png); */
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+.slider-area {
+    position: relative;
+    background-image: url({% static 'img/hero/h1_hero3.png' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+</style>
+{% endblock %}
+{% block conteudo %}
+<!--? Slider Area Start-->
+
+<div class="slider-area slider-area2">
+            <div class="slider-active dot-style">
+                <!-- Slider Single -->
+                <div class="single-slider  d-flex align-items-center slider-height2">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-xl-7 col-lg-8 col-md-10 ">
+                             <div class="hero-wrapper">
+                                <div class="hero__caption">
+                                    <h1 data-animation="fadeInUp" data-delay=".3s">ERRO DE REQUISIÇÃO (500)</h1>
+                                    <p data-animation="fadeInUp" data-delay=".6s">
+                                        <a href="{% url 'core:indice' %}">Voltar</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Slider Area End -->
+{% endblock %}

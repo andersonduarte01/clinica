@@ -26,4 +26,5 @@ urlpatterns = [
     path('opcoes/<int:pk>/paciente/', views.OpcoesPaciente.as_view(), name='opcoes_paciente'),
     path('opcoes/atendimento/paciente/', views.BuscarOpcoesPaciente.as_view(), name='buscar_opcoes_paciente'),
     path('erro/404/', views.Erro400.as_view(), name='erro400'),
+    path('erro/500/', views.Erro500.as_view(), name='erro500'),
 ]
