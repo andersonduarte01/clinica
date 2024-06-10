@@ -23,55 +23,69 @@ Gen's | Relatorio Semanal
 <div class="row">
     <div class="col col-mb-12">
         <div class="card mb-4">
-          <div class="card-header mb-2">
-            <div class="row justify-content-between ml-0 mr-2">
+            <div class="card-header mb-2">
+                <div class="row justify-content-between ml-0 mr-2">
                     <h5 class="h5 mb-0 font-weight-bold text-uppercase text-left" style="margin-top: 8px;">Atendimentos: {{total_atendimentos}}</h5>
                     <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-right">Total: R${{total}}</h5>
                 </div>
-          </div>
+            </div>
         </div>
         {% for atendimento in atendimentos %}
-        <div class="card" class="mb-4">
-          <ul class="list-group list-group-flush">
-             <li class="list-group-item font-weight-bold">
-                 <div class="row">
-                    <div class="col-md-8">{{atendimento.paciente}}</div>
-                    <div class="col-md-4 text-md-right">{{atendimento.data_cadastro|date:"d/m/Y"}}</div>
-                 </div>
-             </li>
-             {% for exame in atendimento.exame.all %}
-                <li class="list-group-item">
+        <div class="accordion" id="accordionExample{{atendimento.pk}}">
+            <div class="card">
+                <div class="card-header" id="heading{{atendimento.pk}}">
                     <div class="row">
-                        <div class="col-md-8">{{ exame }}</div>
-                        <div class="col-md-4 text-md-right">R$ {{ exame.planos.first.preco }}</div>
+                        <div class="col-md-10 mt-1">
+                            <h5 class="mb-0">
+                                <a href="" class="text-decoration-none text-success" data-toggle="collapse" data-target="#collapse{{atendimento.pk}}" aria-expanded="true" aria-controls="collapse{{atendimento.pk}}">
+                                    {{ atendimento.paciente }}
+                                </a>
+                            </h5>
+                        </div>
+                        <div class="col-md-2 mt-1">
+                            <h6 class="mb-0">
+                                Total: R$ {{ atendimento.calcular_total }}
+                            </h6>
+                        </div>
                     </div>
-                </li>
-             {% endfor %}
-              <li class="list-group-item">
-                  <div class="row">
-                        <div class="col-md-8">Total</div>
-                        <div class="col-md-4 text-md-right font-weight-bold">R$ {{ atendimento.calcular_total }}</div>
+                </div>
+
+                <div id="collapse{{atendimento.pk}}" class="collapse" aria-labelledby="heading{{atendimento.pk}}" data-parent="#accordionExample{{atendimento.pk}}">
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                Data: {{ atendimento.data_cadastro|date:"d/m/Y" }}
+                            </li>
+                            {% for exame in atendimento.exame.all %}
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <div class="col-md-8">{{ exame }}</div>
+                                    <div class="col-md-4 text-md-right">R$ {{ exame.planos.first.preco }}</div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-              </li>
-          </ul>
+                </div>
+            </div>
         </div>
         <hr>
         {% endfor %}
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-center">
-  <ul class="pagination">
-    {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primeira</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
-    {% endif %}
-    <li class="page-item disabled"><a class="page-link" href="#">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a></li>
-    {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a></li>
-    {% endif %}
-  </ul>
-</div>
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primeira</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                        {% endif %}
+                        <li class="page-item disabled"><a class="page-link" href="#">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a></li>
+                        {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

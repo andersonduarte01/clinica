@@ -83,15 +83,21 @@ Gen's | Perfil do Paciente
                                                         <div class="d-flex w-100 justify-content-between">
                                                             <p class="mb-1" style="font-size: 80%;">Status: {{exame.status_exame}}</p>
                                                             <small class="text-muted">
-                                                                Doutor(a): {% if exame.medico == None %}{% else %}{{exame.medico}}{% endif %}
+                                                                Doutor(a):{{exame.bio_medico}}
                                                             </small>
                                                         </div>
                                                         <div class="">
                                                                 {% if exame.status_exame == 'REALIZADO' %}
                                                                     <small class="text-muted">Baixar: </small>
+                                                                        {% if exame.terceirizado %}
+                                                                        <a href="{{ exame.anexo.url }}" target="_blank">
+                                                                            <i class="bi bi-file-pdf text-danger"></i>
+                                                                        </a>
+                                                                        {% else %}
                                                                         <a href="{% url 'exame:pdf' pk=exame.pk %}" target="_blank">
                                                                             <i class="bi bi-file-pdf text-danger"></i>
                                                                         </a>
+                                                                        {% endif %}
                                                                 {% endif %}
                                                         </div>
                                                     </div>
@@ -136,13 +142,18 @@ Gen's | Perfil do Paciente
                     <hr>
                     <div class="row">
                         <div class="col-md-12 text-secondary">
-                            <span class="font-weight-bold">CPF:</span>  {{paciente.cpf}}
+                            <span class="font-weight-bold">CPF:</span>
+                            {% if paciente.cpf %}
+                                {{paciente.cpf}}
+                            {% else %}
+                                Não Cadastrado
+                            {% endif %}
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-md-12 text-secondary">
-                            <span class="font-weight-bold">Cadastrado:</span> {{paciente.cadastrado|date:"m/d/Y"}}
+                            <span class="font-weight-bold">Cadastrado:</span> {{paciente.cadastrado|date:"d/m/Y"}}
                         </div>
                     </div>
                     <hr>
@@ -155,8 +166,13 @@ Gen's | Perfil do Paciente
                         </div>
                         <div class="col-md-6">
                             <a class="btn btn-outline-secondary btn-block"
-                               href="{% url 'home:senha_up' pk=paciente.usuario.pk %}">
+                               {% if paciente.usuario.pk %}
+                                href="{% url 'home:senha_up' pk=paciente.usuario.pk %}">
                                 Atualizar Senha
+                               {% else %}
+                                href="#">
+                                Cadastrar CPF e usuário
+                               {% endif %}
                             </a>
                         </div>
                     </div>
@@ -201,7 +217,7 @@ Gen's | Perfil do Paciente
                             {% if endereco != None %}
                             <a class="btn btn-outline-success btn-block"  href="{% url 'home:atualizar_endereco' pk=endereco.pk %}">Atualizar Endereço</a>
                             {% else %}
-                            <a class="btn btn-outline-success btn-block"  href="{% url 'home:endereco' id=paciente.usuario.id %}">Cadastrar Endereço</a>
+                            <a class="btn btn-outline-success btn-block"  href="{% url 'home:endereco' id=paciente.id %}">Cadastrar Endereço</a>
                             {% endif %}
                         </div>
                     </div>

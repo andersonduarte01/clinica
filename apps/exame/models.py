@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+from .validacao import validate_pdf_extension
 from ..agenda.models import Plano
 from ..core.models import Usuario
 
@@ -15,12 +16,16 @@ class Exame(models.Model):
     material = models.CharField(verbose_name='Material', max_length=120)
     metodo = models.CharField(verbose_name='Metodo', max_length=120)
     codigo = models.CharField(max_length=12, unique=True)
-    medico = models.CharField(verbose_name='Médico(a)', max_length=200, null=True, blank=True)
+    anexo = models.FileField(upload_to='exames/terceirizados', verbose_name='Anexar arquivo', null=True, blank=True,
+                             help_text='Anexar exame terceirizado',
+                             max_length=300, validators=[validate_pdf_extension])
+    bio_medico = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING, verbose_name='Biomédico(a)', null=True, blank=True)
     planos = models.ManyToManyField(Plano, related_name='planos_list')
     status_exame = models.CharField(verbose_name='Status do Exame', max_length=20, choices=STATUS_EXAME, default='AGUARDANDO')
     comentario = models.TextField(verbose_name='Observações', null=True, blank=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
     data_alterado = models.DateTimeField(auto_now=True)
+    terceirizado = models.BooleanField(default=False)
     padrao = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
 

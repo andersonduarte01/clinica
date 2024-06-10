@@ -1,27 +1,32 @@
+import json
 import textwrap
+from io import BytesIO
 
+import requests
+import zpl
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core import serializers
 from django.db import transaction
 from django.forms import inlineformset_factory
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
-from reportlab.lib.units import inch, cm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.platypus.para import Paragraph
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
 from apps.agenda.models import Plano
 from apps.atendimento.models import OrcamentoExames
+from apps.core.models import Usuario
 from apps.exame.exame_create import objeto_exame
 from apps.exame.forms import ExameForm, ReferenciaForm, FatorReferenciaForm, ValorEsperadoForm, ExameFormUpdate, \
-    ExameAtendimentoForm, ReferenciaExameForm, ExameMedicForm
+    ExameAtendimentoForm, ReferenciaExameForm, ExameMedicForm, ExameMedicTerceirizado
 from apps.exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado
 
 
@@ -93,7 +98,16 @@ class ExamesListaData(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         data = self.kwargs['data']
-        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO')
+        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False, terceirizado=False)
+
+
+class ExamesListaTerceirizado(LoginRequiredMixin, ListView):
+    model = Exame
+    template_name = 'exame/exames_lista_terceirizado.html'
+    context_object_name = 'exames'
+
+    def get_queryset(self):
+        return Exame.objects.filter(status_exame='AGUARDANDO', padrao=False, terceirizado=True)
 
 
 class ExamesListaDataRealizados(LoginRequiredMixin, ListView):
@@ -479,13 +493,12 @@ def realizar_exame(request, pk):
     if request.method == 'POST':
         form = ExameMedicForm(request.POST, instance=exame)
         formset = ReferenciaExameInlineFormSet(request.POST, request.FILES, instance=exame)
-        print(f'Formset: {formset.is_valid()}')
-        print(formset)
         if form.is_valid() and formset.is_valid():
             exame1 = form.save(commit=False)
             formset1 = formset.save()
+            bio_medico = Usuario.objects.get(usuario=request.user)
+            exame1.bio_medico = bio_medico
             exame1.save()
-            #url = reverse('home:painel', kwargs={'pk': aluno.sala.pk})
             url = reverse('home:painel')
             return HttpResponseRedirect(url)
 
@@ -496,6 +509,21 @@ def realizar_exame(request, pk):
     orcamento = OrcamentoExames.objects.filter(exame=exame).first()
     context = {'form': form, 'orcamento': orcamento, 'exame': exame, 'formset': formset}
     return render(request, "exame/editar_exame_teste.html", context)
+
+
+class ExameTerceirizado(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Exame
+    form_class = ExameMedicTerceirizado
+    success_message = 'Exame anexado com sucesso!'
+    template_name = 'exame/editar_exame_terceirizado.html'
+    success_url = reverse_lazy('home:painel')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        exame = get_object_or_404(Exame, pk=self.kwargs['pk'])
+        orcamento = OrcamentoExames.objects.filter(exame=exame).first()
+        context['orcamento'] = orcamento
+        return context
 
 
 # def criar_laudo_medico(request, pk):
@@ -861,15 +889,26 @@ def criar_laudo_medico(request, pk):
     c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
     c.line(ponto1[0], altura_linha_65cm, ponto2[0], altura_linha_65cm)  # Linha horizontal a 6,5cm
 
-    # Desenhar a linha paralela à linha superior do paralelogramo (a 25cm)
-    altura_linha_25cm = ponto3[1] - 25 * 28.35  # Altura da linha a 25cm da linha superior em pontos
-    c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
-    c.line(ponto1[0], altura_linha_25cm, ponto2[0], altura_linha_25cm)  # Linha horizontal a 25cm
+
+
 
     # Desenhar a linha paralela à linha superior do paralelogramo (a 26cm)
     altura_linha_26cm = ponto3[1] - 26 * 28.35  # Altura da linha a 26cm da linha superior em pontos
-    c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
-    c.line(ponto1[0], altura_linha_26cm, ponto2[0], altura_linha_26cm)  # Linha horizontal a 26cm
+    imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
+
+    # Baixa a imagem da URL
+    response_imagem = requests.get(imagem_url)
+    if response_imagem.status_code == 200:
+        imagem_bytes = response_imagem.content
+    else:
+        return HttpResponse('Erro ao baixar a imagem', status=500)
+
+    imagem_reader = ImageReader(BytesIO(imagem_bytes))
+    largura_imagem = 50
+    altura_imagem = 50
+    posicao_horizontal_central = (largura_pagina - largura_imagem) / 2
+    c.drawImage(imagem_reader, posicao_horizontal_central, altura_linha_26cm - 20, width=largura_imagem, height=altura_imagem)
+
 
     # Desenhar a linha vertical paralela à linha esquerda do paralelogramo (a 14cm)
     largura_linha_vertical_14cm = ponto1[0] + 14 * 28.35  # Largura da linha a 14cm da linha vertical à esquerda em pontos
@@ -967,7 +1006,7 @@ def criar_laudo_medico(request, pk):
 
     # Escrever 'EXAME' entre altura_linha_4cm e altura_linha_3cm, tamanho 18, em negrito
     c.setFont("Helvetica-Bold", 18)  # Definir a fonte em negrito e o tamanho do texto
-    c.setFillColorRGB(0, 0, 0)  # Definir a cor preta (RGB)
+    c.setFillColorRGB(0, 0.5, 0)  # Definir a cor preta (RGB)
     texto_exame = f'{exame}'
     largura_texto_exame = c.stringWidth(texto_exame, "Helvetica-Bold", 18)  # Obter a largura do texto em pontos
 
@@ -996,7 +1035,11 @@ def criar_laudo_medico(request, pk):
     c.drawString(ponto1[0] + 5, altura_linha_65cm + 55, f'Nome: {atendimento.paciente}')
 
     # Escrever o nome 'CPF'
-    c.drawString(ponto1[0] + 5, altura_linha_65cm + 35, f'CPF: {atendimento.paciente.cpf}')
+    cpf_1 = 'Não cadastrado'
+    if atendimento.paciente.cpf:
+        cpf_1 = atendimento.paciente.cpf
+
+    c.drawString(ponto1[0] + 5, altura_linha_65cm + 35, f'CPF: {cpf_1}')
 
     # Escrever o nome 'Data de Nascimento'
     c.drawString(ponto1[0] + 5, altura_linha_65cm + 15, f'Data de Nascimento: {atendimento.paciente.data_nascimento}')
@@ -1181,3 +1224,63 @@ def criar_laudo_medico(request, pk):
 
     return response
 
+
+class BuscarExame(LoginRequiredMixin, TemplateView):
+    template_name = 'exame/buscar_exame1.html'
+
+
+def buscar_exame(request):
+    if request.POST.get('ajax_request') == 'true':
+        res = None
+        nomes = request.POST.get('nomes')
+        query_se = Exame.objects.filter(codigo__icontains=nomes)
+
+        if len(query_se) > 0 and len(nomes) > 0:
+            data = []
+            for exame in query_se:
+                item = {
+                    'pk': exame.pk,
+                    'codigo': exame.codigo,
+                    'nome': exame.nome,
+                }
+
+                data.append(item)
+            res = data
+        else:
+            res = 'Nenhum exame encontrado'
+
+        return JsonResponse({'data': res})
+    return JsonResponse({})
+
+
+def etiqueta_exame(request, pk):
+    exame = get_object_or_404(Exame, pk=pk)
+
+    orcamento = OrcamentoExames.objects.filter(exame=exame).first()
+
+    # Inicializar a etiqueta ZPL
+    l = zpl.Label(100, 60)
+    height = 0
+
+    # Adicionar o nome do orçamento, se disponível
+    if orcamento:
+        l.origin(0, 0)
+        l.write_text({orcamento.paciente.nome}, char_height=10, char_width=8, line_width=60, justification='C')
+        l.endorigin()
+        height += 13
+
+    # Adicionar o nome do exame
+    l.origin(0, height)
+    l.write_text(exame.nome, char_height=10, char_width=8, line_width=60, justification='C')
+    l.endorigin()
+    height += 13
+
+    # Adicionar o código do exame
+    l.origin(0, height)
+    l.write_text({exame.codigo}, char_height=10, char_width=8, line_width=60, justification='C')
+    l.endorigin()
+    height += 13
+
+    # Gerar e visualizar o ZPL
+    print(l.dumpZPL())
+    l.preview()

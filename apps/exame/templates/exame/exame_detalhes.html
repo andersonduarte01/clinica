@@ -33,18 +33,6 @@ Gen's | Info Exame
                         <div class="small text-gray-500 message-time font-weight-bold">{{exame.metodo}}</div>
                     </a>
                 </div>
-                <div class="customer-message align-items-center">
-                    <a class="font-weight-bold" href="#">
-                        <div class="text-success message-title">Observações</div>
-                        <div class="small text-gray-500 message-time font-weight-bold">
-                            {% if exame.comentario != None %}
-                             {{exame.comentario | slice:":100"}}
-                            {% else%}
-                              Sem observações
-                            {% endif%}
-                        </div>
-                    </a>
-                </div>
                 <div class="card-footer text-center">
                     <a class="m-0 small text-success card-link font-weight-bold" href="{% url 'exame:exame_up' pk=exame.pk %}">Editar Informações Básicas <i
                             class="fas fa-chevron-right"></i></a>
@@ -52,7 +40,9 @@ Gen's | Info Exame
             </div>
         </div>
     </div>
-    <div class="col-xl-8 col-lg-7 mb-4">
+    {% if exame.terceirizado %}
+    {% else %}
+        <div class="col-xl-8 col-lg-7 mb-4">
         <div class="card">
             <div class="card-header py-4 bg-success d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-white">REFERÊNCIAS</h6>
@@ -130,6 +120,7 @@ Gen's | Info Exame
 
         </div>
     </div>
+    {% endif %}
     <div class="col-xl-4 col-lg-5 mb-4">
         <div class="card">
             <div class="card-header py-4 bg-success d-flex flex-row align-items-center justify-content-between">

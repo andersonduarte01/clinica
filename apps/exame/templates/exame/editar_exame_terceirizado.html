@@ -2,7 +2,7 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block titulo %}
-Gen's | Realizar Exame
+Gen's | Anexar Exame Terceirizado
 {% endblock %}
 {% block estilo %}
 {{block.super}}
@@ -49,42 +49,6 @@ Gen's | Realizar Exame
                 <hr>
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    {{ formset.management_form }}
-                    <div class="table-responsive p-3">
-                       <table class="table table-flush table-hover" id="dataTableHover">
-                          <thead class="bg-success">
-                          <tr class="text-uppercase text-white">
-                            <th>Nome</th>
-                            <th>Inserir</th>
-                            <th>Valores de Referência</th>
-                          </tr>
-                          </thead>
-                          <tbody>
-                          {% for form1 in formset %}
-                            <tr>
-                              <td class="text-success font-weight-bold">{{ form1.instance.nome_referencia }}</td>
-                              <td>
-                                  {{ form1.valor_obtido }}
-                              </td>
-                              <td class="text-secondary">
-                                    {% for fator in form1.instance.fatores.all %}
-                                        {% if fator.nome_fator != None %}{{ fator.nome_fator }}{% else %}{{ fator.idade }}{% endif %}: {{ fator.limite_inferior }} - {{ fator.limite_superior }}<br>
-                                    {% endfor %}
-                                    {% for valor in form1.instance.padrao.all %}
-                                        {{ valor.tipo_valor }}: {{ valor.valor_esperado }}<br>
-                                    {% endfor %}
-                                  {% if form1.instance.limite_inferior != None and form1.instance.limite_superior %}
-                                   {{ form1.instance.limite_inferior }} até {{ form1.instance.limite_superior }}
-                                  {% endif %}
-
-                              </td>
-                             <input type="hidden" name="referencias-{{ forloop.counter0 }}-id" value="{{ form1.instance.id }}">
-                            </tr>
-                          {% endfor %}
-                          </tbody>
-                        </table>
-                    </div>
-                    <hr>
                     {% bootstrap_form form %}
                     <div class="form-group">
                         <button type="submit" class="btn btn-success btn-block" id="btn-finalizar">Finalizar</button>

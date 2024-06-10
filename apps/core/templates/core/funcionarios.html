@@ -40,10 +40,16 @@ Gen's | Funcionários
                 {% elif paciente.adm %}
                   Administrador
                 {% elif paciente.doutor %}
-                  Médico
+                  Bio_Médico(a)
                 {% endif %}
               </td>
-              <td class="text-center">{{ paciente.cpf }}</td>
+              <td class="text-center">
+                {% if paciente.cpf %}
+                  {{ paciente.cpf }}
+                {% else %}
+                  <span class="text-danger">CPF não cadastrado</span>
+                {% endif %}
+              </td>
               <td class="text-center">
                 <a href="{% url 'home:perfil' pk=paciente.pk %}" class="text-success"><i class="bi bi-box-arrow-in-right"></i></a>
               </td>

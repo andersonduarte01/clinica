@@ -85,7 +85,6 @@ class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             exames_selecionados_ids = self.request.POST.getlist('exames')
             sequencia_selecionada = []
             planos_selecionados = self.request.POST.getlist('planos_selecionados')
-            print(planos_selecionados)
             planos = [plano for plano in planos_selecionados if plano]
             numeros = []
             for plano in planos:
@@ -186,7 +185,7 @@ class AtendimentoView1(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
-        paciente = Usuario.objects.get(nome=self.kwargs['nome'])
+        paciente = Usuario.objects.get(pk=self.kwargs['pk'])
         orcamento = get_object_or_404(OrcamentoExames, paciente=paciente, data_cadastro=self.kwargs['data'])
         exame_realizado = OrcamentoExames.algum_exame_realizado(orcamento)
         contexto['orcamento'] = orcamento

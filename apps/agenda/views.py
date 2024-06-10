@@ -155,10 +155,13 @@ def buscar_paciente(request):
         if len(query_se) > 0 and len(nomes) > 0:
             data = []
             for paciente in query_se:
+                retorno = 'CPF não cadastrado'
+                if paciente.cpf:
+                    retorno = paciente.cpf
                 item = {
                     'pk': paciente.pk,
                     'nome': paciente.nome,
-                    'cpf': paciente.cpf,
+                    'cpf': retorno,
                 }
 
                 data.append(item)

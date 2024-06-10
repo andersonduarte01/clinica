@@ -36,7 +36,9 @@ Gen's | Novo Orçamento
                  <hr>
                 <div class="row">
                       <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente" ></div>
-                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:  {{paciente.usuario}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">
+                          USUARIO:  {% if paciente.usuario %}{{paciente.usuario}}{% else %}Não cadastrado{% endif %}
+                      </div>
                       <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{paciente.rg}}</div>
                       <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{paciente.telefone}}</div>
                       <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{paciente.data_nascimento}}</div>
@@ -207,7 +209,7 @@ function formatarCPF(cpf) {
     return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
 }
 var cpf = "{{paciente.cpf}}";
-var cpfFormatado = formatarCPF(cpf);
+var cpfFormatado = (cpf == 'None') ? "Não cadastrado" : formatarCPF(cpf);
 
 document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
 

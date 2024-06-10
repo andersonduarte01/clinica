@@ -12,7 +12,8 @@ def objeto_exame(pk, sequencia):
         material=exame_padrao.material,
         metodo=exame_padrao.metodo,
         comentario=exame_padrao.comentario,
-        padrao=False
+        padrao=False,
+        terceirizado=exame_padrao.terceirizado
     )
 
     for plano1 in planos_padrao:

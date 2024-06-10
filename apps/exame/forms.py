@@ -1,12 +1,12 @@
 from django import forms
 from django.forms import TextInput
 from ..exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado
-
+from .validacao import validate_pdf_extension
 
 class ExameForm(forms.ModelForm):
     class Meta:
         model = Exame
-        fields = ('nome', 'material', 'metodo', 'comentario')
+        fields = ('nome', 'material', 'metodo', 'terceirizado')
 
 
 class ExameFormUpdate(forms.ModelForm):
@@ -69,7 +69,16 @@ class ExameAtendimentoForm(forms.ModelForm):
 class ExameMedicForm(forms.ModelForm):
     class Meta:
         model = Exame
-        fields = ('medico', 'comentario', 'status_exame')
+        fields = ('comentario', 'status_exame')
+
+
+class ExameMedicTerceirizado(forms.ModelForm):
+    class Meta:
+        model = Exame
+        fields = ('anexo', 'status_exame')
+        widgets = {
+            'anexo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
 
 
 class ReferenciaExameForm(forms.ModelForm):

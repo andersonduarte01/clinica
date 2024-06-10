@@ -5,7 +5,7 @@ from .models import OrcamentoExames, Exame
 
 class OrcamentoForm(forms.ModelForm):
     exames = forms.ModelMultipleChoiceField(
-        queryset=Exame.objects.filter(padrao=True),
+        queryset=Exame.objects.filter(padrao=True).order_by('nome'),
         widget=forms.CheckboxSelectMultiple(),
         required=False,
     )

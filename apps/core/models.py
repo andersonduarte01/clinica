@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from cpf_field.models import CPFField
+from stdimage import StdImageField
 
 
 class Usuario(models.Model):
@@ -8,9 +9,13 @@ class Usuario(models.Model):
         ('M', 'Masculino'),
         ('F', 'Feminino'),
     ]
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
     nome = models.CharField(verbose_name='Nome', max_length=155)
-    cpf = CPFField('CPF')
+    assinatura = StdImageField(upload_to='Imagens/Logo',
+                                variations={'thumbnail': {'width': 300, 'height': 300}},
+                                null=True, blank=True,
+                                delete_orphans=True)
+    cpf = models.CharField(verbose_name='CPF', max_length=15, blank=True, null=True)
     rg = models.CharField(verbose_name='RG', max_length=25, blank=True, null=True)
     sexo = models.CharField(verbose_name='Sexo', max_length=20, choices=SEXO)
     telefone = models.CharField(verbose_name='Telefone', max_length=20)
@@ -19,7 +24,7 @@ class Usuario(models.Model):
     atualizado = models.DateTimeField(auto_now=True)
     funcionario = models.BooleanField(verbose_name='Funcionário?', default=False)
     adm = models.BooleanField(verbose_name='Administrador?', default=False)
-    doutor = models.BooleanField(verbose_name='Doutor(a)?', default=False)
+    doutor = models.BooleanField(verbose_name='Bio_Médico(a)?', default=False)
     paciente = models.BooleanField(verbose_name='Paciente?', default=False)
     status = models.BooleanField(verbose_name='Status', default=True)
 

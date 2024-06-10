@@ -74,7 +74,9 @@ Gen's | Visualizar Atendimento
                 <hr>
                 <div class="row">
                     <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente" ></div>
-                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:  {{orcamento.paciente.usuario}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:
+                        {% if paciente.usuario %}{{paciente.usuario}}{% else %}Não cadastrado{% endif %}
+                    </div>
                     <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
                     <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
                     <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
@@ -99,6 +101,7 @@ Gen's | Visualizar Atendimento
                                         <i class="bi bi-check2"></i> R$ {{plano.preco}}
                                     </div>
                                     {% endfor %}
+                                    <a href="{% url 'exame:etiqueta_exame' pk=exame.pk %}"><i class="bi bi-printer"></i></a>
                                 </footer>
 
                             </div>
@@ -135,7 +138,7 @@ Gen's | Visualizar Atendimento
     return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
 }
 var cpf = "{{orcamento.paciente.cpf}}";
-var cpfFormatado = formatarCPF(cpf);
+var cpfFormatado = (cpf == 'None') ? "Não cadastrado" : formatarCPF(cpf);
 
 document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
 </script>

@@ -1,7 +1,6 @@
 from datetime import date, timedelta
 
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
@@ -39,7 +38,7 @@ class Contato(TemplateView):
 
 
 class Painel(PermissaoFuncionariosMixin, TemplateView):
-    template_name = 'core/painel.html'
+    template_name = 'core/painel1.html'
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
@@ -62,7 +61,7 @@ class Painel(PermissaoFuncionariosMixin, TemplateView):
         fila_atendido = OrdemChegada.fila_dia_atendido(today)
 
         #Exames
-        exames_aguardando = Exame.objects.filter(data_cadastro__date=today, status_exame='AGUARDANDO').count
+        exames_aguardando = Exame.objects.filter(data_cadastro__date=today, status_exame='AGUARDANDO', padrao=False, terceirizado=False).count
         exames_realizados = Exame.objects.filter(data_cadastro__date=today, status_exame='REALIZADO').count
 
         contexto['ated_diario'] = OrcamentoExames.total_atendimentos_diarios
@@ -91,12 +90,14 @@ class Cadastrar(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         pessoa = form.save(commit=False)
-        cpf = pessoa.cpf.replace('.', '').replace('-', '')
-        user = User.objects.create_user(username=cpf, password=form.cleaned_data['password1'])
-        pessoa.usuario = user
+        if pessoa.cpf:
+            cpf = pessoa.cpf.replace('.', '').replace('-', '')
+            user = User.objects.create_user(username=cpf, password=form.cleaned_data['password1'])
+            pessoa.usuario = user
+
         pessoa.paciente = True
         pessoa.save()
-        self.user_id = user.id
+        self.user_id = pessoa.id
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -131,8 +132,7 @@ class EnderecoCad(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         endereco = form.save(commit=False)
-        user = User.objects.get(id=self.kwargs['id'])
-        usuario = Usuario.objects.get(usuario=user)
+        usuario = Usuario.objects.get(id=self.kwargs['id'])
         endereco.pessoa = usuario
         endereco.save()
         return super().form_valid(form)
@@ -185,8 +185,9 @@ class MostrarPerfil(LoginRequiredMixin, DetailView):
       endereco = None
       try:
         endereco = Endereco.objects.get(pessoa=paciente)
+        print(f'Endereco: {endereco}')
       except:
-          print('')
+          print('ERROR')
 
       atendimentos = paciente.r_paciente.all().order_by('-data_cadastro')
       context['atendimentos'] = atendimentos
@@ -197,7 +198,7 @@ class MostrarPerfil(LoginRequiredMixin, DetailView):
 
 class AtualizarPerfil(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Usuario
-    fields = ('nome', 'cpf', 'rg', 'sexo', 'data_nascimento', 'telefone')
+    fields = ('nome', 'rg', 'sexo', 'data_nascimento', 'telefone')
     template_name = 'core/atualizar_perfil.html'
     context_object_name = 'form'
     success_message = 'Informações atualizadas com sucesso!'
@@ -214,7 +215,8 @@ class AtualizarEndereco(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'Endereço atualizado com sucesso!'
 
     def get_success_url(self):
-        return reverse_lazy('home:atualizar', kwargs={'pk': self.get_object.pessoa.pk})
+        endereco = Endereco.objects.get(pk=self.kwargs['pk'])
+        return reverse_lazy('home:perfil', kwargs={'pk': endereco.pessoa.pk})
 
 
 def buscar_atendimento_paciente(request):
@@ -254,10 +256,13 @@ def buscar_paciente(request):
         if len(query_se) > 0 and len(nomes) > 0:
             data = []
             for paciente in query_se:
+                retorno = 'CPF não cadastrado'
+                if paciente.cpf:
+                    retorno = paciente.cpf
                 item = {
                     'pk': paciente.pk,
                     'nome': paciente.nome,
-                    'cpf': paciente.cpf,
+                    'cpf': retorno,
                 }
 
                 data.append(item)

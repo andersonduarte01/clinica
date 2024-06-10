@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'cpf_field',
     'bootstrap4',
+    'stdimage',
 ]
 
 MIDDLEWARE = [

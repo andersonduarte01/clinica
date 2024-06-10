@@ -12,6 +12,7 @@ urlpatterns = [
     path('atendimento/<int:pk>/deletar/', views.ExameAtendimentoDel.as_view(), name='exame_atendimento_del'),
     path('lista/', views.ExamesLista.as_view(), name='exame_list'),
     path('<str:data>/lista/', views.ExamesListaData.as_view(), name='exame_list_data'),
+    path('aguardando/terceirizados/lista/', views.ExamesListaTerceirizado.as_view(), name='exame_list_terceirizado'),
     path('realizados/<str:data>/', views.ExamesListaDataRealizados.as_view(), name='exame_realizados_data'),
     path('<int:pk>/informacoes/', views.ExameDetalhes.as_view(), name='exame_detail'),
     path('nova/referencias/<int:pk>/', views.ReferenciaADD.as_view(), name='referencias_add'),
@@ -29,8 +30,9 @@ urlpatterns = [
     path('<int:pk>/pdf/', views.criar_laudo_medico, name='pdf'),
 
     # area medica #
-    #path('area/restrita/<int:pk>/atualizar/', views.ExameUpdateMedicView.as_view(), name='exame_medico_update'),
-    #path('area/restrita/<int:pk>/visualizar/', views.ExameMedicView.as_view(), name='exame_medico_ver'),
     path('area/restrita/<int:pk>/realizar/', views.realizar_exame, name='exame_medico_ver'),
-
+    path('terceirizado/area/restrita/<int:pk>/anexar/', views.ExameTerceirizado.as_view(), name='exame_medico_anexar'),
+    path('pesquisar/', views.BuscarExame.as_view(), name='pesquisar_exame'),
+    path('buscar/exame/', views.buscar_exame, name='buscar_exame'),
+    path('imprimir/etiqueta/<int:pk>/', views.etiqueta_exame, name='etiqueta_exame'),
 ]

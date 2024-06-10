@@ -2,10 +2,10 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block titulo %}
-Gen's | Lista de Exames
+Gen's | Exames Terceirizados Aguardando
 {% endblock %}
 {% block trilha %}
-<h4 class="h4 mb-0 text-success font-weight-bold">LISTA DE EXAMES</h4>
+<h4 class="h4 mb-0 text-success font-weight-bold">LISTA DE EXAMES AGUARDANDO</h4>
 {% endblock %}
 {% block conteudo %}
 <div class="row">
@@ -15,9 +15,10 @@ Gen's | Lista de Exames
         <table class="table align-items-center table-flush table-hover" id="dataTableHover">
           <thead class="bg-success">
           <tr class="text-uppercase text-white">
+            <th>Código</th>
             <th>Nome</th>
-            <th class="text-center">Material</th>
-            <th class="text-center">Preço</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Realizar</th>
             {% if user.usuario.adm %}
             <th class="text-center">Editar/Excluir</th>
             {% endif %}
@@ -25,9 +26,10 @@ Gen's | Lista de Exames
           </thead>
           <tfoot>
           <tr>
+            <th class="text-uppercase text-success">Código</th>
             <th class="text-uppercase text-success">Nome</th>
-            <th class="text-uppercase text-success text-center">Material</th>
-            <th class="text-uppercase text-success text-center">Preço</th>
+            <th class="text-uppercase text-success text-center">Status</th>
+            <th class="text-uppercase text-success text-center">Realizar</th>
             {% if user.usuario.adm %}
             <th class="text-uppercase text-success text-center">Editar/Excluir</th>
             {% endif %}
@@ -36,19 +38,15 @@ Gen's | Lista de Exames
           <tbody>
           {% for exame in exames %}
             <tr>
-              <td>
-                {{exame}}
-                {% if exame.terceirizado %}
-                (Terceirizado)
-                {% endif %}
-              </td>
-              <td class="text-center">{{exame.material}}</td>
+              <td>{{exame.codigo}}</td>
+              <td>{{exame}}</td>
               <td class="text-center">
-                {% for plano in exame.planos.all %}
-                  R$ {{plano.preco}}
-                {% empty %}
-                  <span class="text-danger">Preço não cadastrado</span>
-                {% endfor %}
+                {{exame.status_exame}}
+              </td>
+              <td class="text-center">
+                <a href="{% url 'exame:exame_medico_anexar' pk=exame.pk %}" class="text-decoration-none text-primary font-weight-bold">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                </a>
               </td>
               {% if user.usuario.adm %}
               <td class="text-center">
