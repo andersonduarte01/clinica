@@ -318,3 +318,7 @@ class AtualizarSenha(LoginRequiredMixin, FormView):
         paciente = Usuario.objects.get(usuario=user)
         contexto['paciente'] = paciente
         return contexto
+
+
+class Erro400(TemplateView):
+    template_name = 'core/erro400.html'

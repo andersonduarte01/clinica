@@ -11,3 +11,5 @@ urlpatterns = [
     path('atendimento/', include('apps.atendimento.urls', namespace='atendimento')),
     path('accounts/', include('django.contrib.auth.urls'),),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler400 = 'apps.core.views.Erro400'
