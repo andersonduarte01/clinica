@@ -11,6 +11,7 @@ urlpatterns = [
     path('blog/', views.Blog.as_view(), name='blog'),
     path('redirecionar/', views.custom_login_redirect, name='redirecione'),
     path('painel/cadastrar/novo/paciente/', views.Cadastrar.as_view(), name='add'),
+    path('painel/atualizar/<int:pk>/paciente/', views.AtualizarUser.as_view(), name='add_user'),
     path('painel/cadastrar/novo/funcionario/', views.CadastrarFuncionario.as_view(), name='add_funcionario'),
     path('painel/<int:id>/endereco/', views.EnderecoCad.as_view(), name='endereco'),
     path('painel/administrativo/', views.Painel.as_view(), name='painel'),
@@ -25,6 +26,5 @@ urlpatterns = [
     path('paciente/buscar/', views.buscar_paciente, name='busca_paciente'),
     path('opcoes/<int:pk>/paciente/', views.OpcoesPaciente.as_view(), name='opcoes_paciente'),
     path('opcoes/atendimento/paciente/', views.BuscarOpcoesPaciente.as_view(), name='buscar_opcoes_paciente'),
-    path('erro/404/', views.Erro400.as_view(), name='erro400'),
-    path('erro/500/', views.Erro500.as_view(), name='erro500'),
+
 ]

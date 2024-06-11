@@ -170,7 +170,7 @@ Gen's | Perfil do Paciente
                                 href="{% url 'home:senha_up' pk=paciente.usuario.pk %}">
                                 Atualizar Senha
                                {% else %}
-                                href="#">
+                                href="{% url 'home:add_user' pk=paciente.pk %}">
                                 Cadastrar CPF e usuário
                                {% endif %}
                             </a>

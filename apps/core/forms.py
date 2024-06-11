@@ -60,3 +60,22 @@ class EnderecoForm(forms.ModelForm):
         model = Endereco
         fields = ('rua', 'numero', 'complemento', 'bairro', 'cep', 'cidade', 'estado')
 
+
+class AtualizarUsuarioForm(forms.ModelForm):
+    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Senha', 'class': 'custom-text form-control', 'autocomplete': 'off'}))
+    password2 = forms.CharField(label='Confirmar Senha', widget=forms.PasswordInput(attrs={'placeholder': 'Repetir Senha', 'class': 'custom-text form-control', 'autocomplete': 'off'}))
+
+    class Meta:
+        model = Usuario
+        fields = ('cpf',)
+
+        widgets = {
+            'cpf': forms.TextInput(attrs={'placeholder': '000.000.000-00', 'class': 'custom-text form-control'}),
+            }
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Senhas não coincidem.")
+        return password2

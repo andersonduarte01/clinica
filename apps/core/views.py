@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, FormView
 from .models import Usuario, Endereco
-from .forms import CriarUsuarioForm, EnderecoForm, CriarFuncionarioForm
+from .forms import CriarUsuarioForm, EnderecoForm, CriarFuncionarioForm, AtualizarUsuarioForm
 from .permissoes import PermissaoFuncionariosMixin
 from ..agenda.models import OrdemChegada
 from ..atendimento.models import OrcamentoExames
@@ -102,6 +102,26 @@ class Cadastrar(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy('home:endereco', kwargs={'id': self.user_id})
+
+
+class AtualizarUser(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Usuario
+    form_class = AtualizarUsuarioForm
+    template_name = 'core/atualizar_user.html'
+    success_message = 'Cadastro realizado com sucesso!'
+
+    def form_valid(self, form):
+        pessoa = form.save(commit=False)
+        if pessoa.cpf:
+            cpf = pessoa.cpf.replace('.', '').replace('-', '')
+            user = User.objects.create_user(username=cpf, password=form.cleaned_data['password1'])
+            pessoa.usuario = user
+        pessoa.save()
+        self.user_id = pessoa.pk
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('home:perfil', kwargs={'pk': self.user_id})
 
 
 class CadastrarFuncionario(LoginRequiredMixin, SuccessMessageMixin, CreateView):
