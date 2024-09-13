@@ -61,7 +61,7 @@ Gen's | Novo Orçamento
                                     <div class="card-body" style="margin-top:-15px;">
                                         <p>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="exame" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
+                                                <input class="form-check-input" type="checkbox" name="exames" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
                                                 <label class="form-check-label" for="exame_{{ exame.id }}">
                                                     {{ exame.nome }}
                                                 </label>
@@ -124,91 +124,144 @@ Gen's | Novo Orçamento
 
 {% block script %}
 <script>
-// Função para atualizar os planos selecionados antes de enviar o formulário
-document.addEventListener('submit', function(event) {
-    var planosSelecionados = [];
-    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
-    checkboxes.forEach(function(checkbox) {
-        var exameId = checkbox.value;
-        var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
-        if (planoInput) {
-            planosSelecionados.push(planoInput.value);
+    // Função para atualizar os planos selecionados antes de enviar o formulário
+    document.addEventListener('submit', function(event) {
+        var planosSelecionados = [];
+        var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            var exameId = checkbox.name.split('_')[1];
+            var planoId = checkbox.value;
+            var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"][value="' + planoId + '"]');
+            if (planoInput) {
+                planosSelecionados.push(planoInput.value);
+            }
+        });
+        document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
+    });
+
+    // Função para atualizar o valor total e os planos selecionados
+    function atualizarEstiloCard(checkbox) {
+        var card = checkbox.closest('.exame-card');
+        var titulo = card.querySelector('.form-check-label');
+        if (checkbox.checked) {
+            card.style.border = '2px solid #4cb061'; // Altere para a cor de fundo desejada
+            titulo.style.color = '#4cb061';
+            ativarPlanos(checkbox); // Ativa os planos quando o exame é selecionado
+        } else {
+            card.style.border = '2px solid transparent'; // Redefina para a cor de fundo padrão
+            titulo.style.color = '';
+            desativarPlanos(checkbox);
+            desmarcarPlano(checkbox.value);
         }
-    });
-    document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
-});
-
-// Função para ativar planos de um exame ao selecionar o exame
-function ativarPlanos(checkbox) {
-    var exameId = checkbox.value;
-    var planos = document.querySelectorAll('input[name="exame_' + exameId + '_planos"]');
-    planos.forEach(function(plano) {
-        plano.disabled = false; // Ativa os planos
-    });
-}
-
-// Função para desativar planos de um exame ao desmarcar o exame
-function desativarPlanos(checkbox) {
-    var exameId = checkbox.value;
-    var planos = document.querySelectorAll('input[name="exame_' + exameId + '_planos"]');
-    planos.forEach(function(plano) {
-        plano.disabled = true; // Desativa os planos
-        plano.checked = false; // Desmarca os planos
-    });
-    atualizarValorTotal(); // Atualiza o total ao desmarcar o exame
-}
-
-// Função para atualizar o estilo dos cards de exames ao selecionar/deselecionar o exame
-function atualizarEstiloCard(checkbox) {
-    var card = checkbox.closest('.exame-card');
-    var titulo = card.querySelector('.form-check-label');
-    if (checkbox.checked) {
-        card.style.border = '2px solid #4cb061'; // Cor de destaque quando o exame é selecionado
-        titulo.style.color = '#4cb061';
-        ativarPlanos(checkbox); // Ativa os planos quando o exame é selecionado
-    } else {
-        card.style.border = 'none';
-        titulo.style.color = '';
-        desativarPlanos(checkbox); // Desativa os planos quando o exame não é selecionado
+        atualizarValorTotal(); // Atualiza o valor total
+        atualizarPlanosSelecionados(); // Atualiza os planos selecionados
     }
+
+    // Função para ativar os checkboxes de planos correspondentes ao exame selecionado
+    function ativarPlanos(checkbox) {
+        var checkboxes = checkbox.closest('.exame-card').querySelectorAll('.form-check-input');
+        checkboxes.forEach(function(cb) {
+            cb.disabled = !checkbox.checked;
+        });
+    }
+
+    // Função para desativar os checkboxes de planos correspondentes ao exame desmarcado
+    function desativarPlanos(checkbox) {
+    var exameId = checkbox.id.split('_')[1];
+    var planosCheckboxes = document.querySelectorAll('input[name^="exame_' + exameId + '_planos"]');
+    planosCheckboxes.forEach(function(planoCheckbox) {
+        planoCheckbox.checked = false;
+        planoCheckbox.disabled = true;
+    });
 }
 
-// Função para atualizar o valor total ao selecionar um plano
-function atualizarValorTotal() {
+    // Função para calcular o valor total e atualizar o campo correspondente
+    function atualizarValorTotal() {
     var total = 0;
-    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
-    checkboxes.forEach(function(checkbox) {
-        var exameId = checkbox.value;
-        var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
-        if (planoInput) {
-            var precoStr = planoInput.getAttribute('data-preco').replace(',', '.');
-            total += parseFloat(precoStr); // Soma o preço do plano selecionado
+    var planosSelecionados = document.querySelectorAll('input[name^="exame_"]:checked');
+    planosSelecionados.forEach(function(checkbox) {
+        var precoStr = checkbox.getAttribute('data-preco').replace(',', '.');
+        var preco = parseFloat(precoStr);
+        total += preco;
+    });
+    document.getElementById('id_valor_total').value = total.toFixed(2); // Fixa as casas decimais
+}
+
+    // Função para atualizar o campo de planos selecionados
+    function atualizarPlanosSelecionados() {
+        var planosSelecionados = [];
+        var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            planosSelecionados.push(checkbox.value);
+        });
+        document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
+    }
+
+    // Atualiza o valor total a cada segundo
+    document.addEventListener('DOMContentLoaded', function() {
+        setInterval(function() {
+            atualizarValorTotal();
+        }, 1000);
+    });
+
+function formatarCPF(cpf) {
+    cpf = cpf.replace(/[.-]/g, '');
+    return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
+}
+var cpf = "{{paciente.cpf}}";
+var cpfFormatado = formatarCPF(cpf);
+
+document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
+
+
+// Função para verificar se todos os exames selecionados têm um plano correspondente selecionado
+function verificarExamesComPlano() {
+    // Seleciona todos os checkboxes de exames
+    var examesSelecionados = document.querySelectorAll('input[name^="exames"]:checked');
+
+    // Verifica se cada exame selecionado tem um plano correspondente selecionado
+    for (var i = 0; i < examesSelecionados.length; i++) {
+        var exameId = examesSelecionados[i].value;
+        var planoSelecionado = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
+
+        // Se algum exame não tiver um plano correspondente selecionado, retorna falso
+        if (!planoSelecionado) {
+            return false;
         }
-    });
-    document.getElementById('id_valor_total').value = total.toFixed(2); // Atualiza o campo de valor total
-    verificarBotaoFinalizar(total); // Verifica se o botão deve ser habilitado
+    }
+
+    // Se todos os exames selecionados tiverem um plano correspondente selecionado, retorna verdadeiro
+    return true;
 }
 
-// Função para verificar se o botão "Finalizar" deve ser habilitado
-function verificarBotaoFinalizar(total) {
+// Função para habilitar ou desabilitar o botão "Finalizar" com base na verificação dos exames
+function atualizarBotaoFinalizar() {
     var botaoFinalizar = document.querySelector('button[type="submit"]');
-    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
-    botaoFinalizar.disabled = total === 0 || checkboxes.length === 0; // Habilita ou desabilita o botão com base no total e no número de exames selecionados
+
+    // Verifica se todos os exames selecionados têm um plano correspondente selecionado
+    var todosExamesComPlano = verificarExamesComPlano();
+
+    // Ativa ou desativa o botão "Finalizar" com base no resultado da verificação
+    botaoFinalizar.disabled = !todosExamesComPlano;
 }
 
-// Função para ativar o plano ao selecionar o exame
-document.querySelectorAll('input[name^="exame_"]').forEach(function(checkbox) {
+// Adiciona um ouvinte de eventos para os checkboxes de exames
+var checkboxesExames = document.querySelectorAll('input[name^="exames"]');
+checkboxesExames.forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
-        atualizarEstiloCard(checkbox); // Atualiza o estilo do card quando o checkbox é marcado/desmarcado
+        // Atualiza o estado do botão "Finalizar" sempre que um checkbox de exame é alterado
+        atualizarBotaoFinalizar();
     });
 });
 
-// Função para atualizar o valor ao selecionar o plano
-document.querySelectorAll('input[type="radio"][name$="_planos"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-        atualizarValorTotal(); // Atualiza o total ao selecionar um plano
+// Adiciona um ouvinte de eventos para os checkboxes de planos
+var checkboxesPlanos = document.querySelectorAll('input[name^="exame_"]');
+checkboxesPlanos.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        // Atualiza o estado do botão "Finalizar" sempre que um checkbox de plano é alterado
+        atualizarBotaoFinalizar();
     });
 });
+
 </script>
-
 {% endblock %}
