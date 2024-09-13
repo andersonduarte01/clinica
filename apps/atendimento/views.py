@@ -1,20 +1,19 @@
 from django.utils.datetime_safe import datetime
 import json
 from datetime import date, timedelta
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import serializers
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, TemplateView, FormView
 
 from ..agenda.models import OrdemChegada
 from ..atendimento.models import OrcamentoExames
 from ..exame.models import *
-from .forms import OrcamentoForm, OrcamentoFinanceiroForm
+from .forms import OrcamentoForm, OrcamentoFinanceiroForm, OrcamentoForm1
 from ..exame.exame_create import objeto_exame
 # Create your views here.
 
@@ -61,18 +60,96 @@ class Orcamento(LoginRequiredMixin, SuccessMessageMixin,  CreateView):
         return super().form_valid(form)
 
 
+class OrcamentoOrdem1(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = OrcamentoExames
+    form_class = OrcamentoForm1
+    template_name = 'atendimento/orcamento_backup.html'
+    success_message = 'Orçamento finalizado com sucesso!'
+    success_url = reverse_lazy('agenda:ordem_chegada_lista')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        exames_selecionados = self.request.GET.get('exames', '').split(',')
+        kwargs['exames_selecionados'] = [int(id) for id in exames_selecionados if id.isdigit()]
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
+        contexto['paciente'] = paciente
+
+        # Captura os IDs dos exames selecionados
+        exames_selecionados_ids = []
+        if self.request.method == 'POST':
+            exames_selecionados_ids = self.request.POST.getlist('exame')
+            print(f'POST: {exames_selecionados_ids}')
+        else:
+            exames_ids_url = self.request.GET.get('exames', '')
+            if exames_ids_url:
+                exames_selecionados_ids = exames_ids_url.split(',')
+                print(f'GET: {exames_ids_url}')
+
+        contexto['exames_selecionados'] = exames_selecionados_ids
+        return contexto
+
+    def form_valid(self, form):
+        print('FORMULARIO!!!!!!')
+        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
+        ordem = get_object_or_404(OrdemChegada, id=self.kwargs['ordem'])
+
+        # Cria uma instância do orçamento sem salvar
+        orcamento = form.save(commit=False)
+        orcamento.paciente = paciente
+
+        with transaction.atomic():
+            try:
+                # Obter IDs dos exames selecionados
+                exames_selecionados_ids = self.request.POST.getlist('exame')
+                if not exames_selecionados_ids:
+                    form.add_error(None, 'Nenhum exame selecionado.')
+                    return self.form_invalid(form)
+
+                # Salvar o orçamento antes de adicionar os exames
+                orcamento.save()
+
+                # Adicionar exames ao orçamento
+                for id in exames_selecionados_ids:
+                    if id:  # Verifica se id não está vazio
+                        exame = get_object_or_404(Exame, id=int(id))
+                        orcamento.exame.add(exame)
+
+                # Atualizar o status da ordem
+                ordem.status_atendido = 'ATENDIDO'
+                ordem.save()
+
+                # Calcular o total e salvar
+                orcamento.valor_total = orcamento.calcular_total()
+                orcamento.save()  # Salvar orçamento novamente para garantir que o valor total seja atualizado
+
+                return super().form_valid(form)
+
+            except Exception as e:
+                print("Erro ao salvar o orçamento:", e)
+                form.add_error(None, 'Erro ao salvar o orçamento. Tente novamente.')
+                return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        print("Formulário inválido:", form.errors)
+        return super().form_invalid(form)
+
+    def __init__(self, *args, **kwargs):
+        exames_selecionados = kwargs.pop('exames_selecionados', None)
+        super().__init__(*args, **kwargs)
+        if exames_selecionados:
+            self.fields['exame'].queryset = Exame.objects.filter(id__in=exames_selecionados)
+
+
 class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = OrcamentoExames
     form_class = OrcamentoForm
     template_name = 'atendimento/orcamento.html'
     success_message = 'Atendimento realizado'
     success_url = reverse_lazy('agenda:ordem_chegada_lista')
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
-        contexto['paciente'] = paciente
-        return contexto
 
     def form_valid(self, form):
         orcamento = form.save(commit=False)
@@ -82,27 +159,34 @@ class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
         with transaction.atomic():
             orcamento.save()
-            exames_selecionados_ids = self.request.POST.getlist('exames')
-            sequencia_selecionada = []
-            planos_selecionados = self.request.POST.getlist('planos_selecionados')
-            planos = [plano for plano in planos_selecionados if plano]
-            numeros = []
-            for plano in planos:
-                numeros.extend(map(int, plano.split(',')))
 
-            for numero in numeros:
-                sequencia_selecionada.append(numero)
-
-            for numero in exames_selecionados_ids:
-                id = int(numero)
-                obj_exame = objeto_exame(pk=id, sequencia=numeros)
-                orcamento.exame.add(obj_exame)
+            # Processar os exames selecionados
+            exames_selecionados_ids = self.request.POST.get('exames_selecionados', '').split(',')
+            for exame_id in exames_selecionados_ids:
+                exame = get_object_or_404(Exame, pk=exame_id)
+                orcamento.exames.add(exame)
 
             ordem.status_atendido = 'ATENDIDO'
             ordem.save()
 
-        orcamento.save()
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
+        contexto['paciente'] = paciente
+        contexto['ordem'] = self.kwargs['id']
+        return contexto
+
+
+def add_orcamento_exames(request):
+    term = request.GET.get('q', '')
+    exames = Exame.objects.filter(nome__icontains=term, padrao=True)[:10]
+    resultados = [{'id': exame.id, 'nome': exame.nome} for exame in exames]
+    print(f'RESULTADOS: {resultados}')
+    return JsonResponse(resultados, safe=False)
+
+
 
 
 class OrcamentoLista(LoginRequiredMixin, ListView):

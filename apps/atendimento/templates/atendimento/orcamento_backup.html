@@ -1,0 +1,207 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block titulo %}
+Gen's | Novo Orçamento
+{% endblock %}
+
+{% block estilo %}
+{{ block.super }}
+<style>
+    .form-control:focus {
+        color: #000;
+        background-color: #ffffff;
+        border-color: #4cb061;
+        outline: 0;
+    }
+    .blockquote-footer::before {
+        content: "";
+    }
+    .info-paciente {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block trilha %}
+{% endblock %}
+
+{% block conteudo %}
+<div class="row">
+    <div class="col col-md-12">
+        <div id="precos-selecionados"></div>
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success" style="margin-top: 8px;">{{ paciente }}</h5>
+                <hr>
+                <div class="row">
+                    <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente"></div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">
+                        USUARIO: {% if paciente.usuario %}{{ paciente.usuario }}{% else %}Não cadastrado{% endif %}
+                    </div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{ paciente.rg }}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{ paciente.telefone }}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{ paciente.data_nascimento }}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">SEXO: {{ paciente.sexo }}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <hr>
+                    <div class="form-group">
+                        <label>
+                            <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success" style="margin-top: 10px;">Exames</h5>
+                        </label>
+                        <div class="row">
+                            {% for exame in form.exame.field.queryset %}
+                            <div class="col-md-4">
+                                <div class="card exame-card" style="margin-bottom:10px; margin-top: 10px;">
+                                    <div class="card-body" style="margin-top:-15px;">
+                                        <p>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="exame" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
+                                                <label class="form-check-label" for="exame_{{ exame.id }}">
+                                                    {{ exame.nome }}
+                                                </label>
+                                            </div>
+                                        </p>
+                                        <footer>
+                                            {% for plano in exame.planos.all %}
+                                            <div class="form-check ml-1">
+                                                <input class="form-check-input" type="radio" name="exame_{{ exame.id }}_planos" id="exame_{{ exame.id }}_plano_{{ plano.id }}" value="{{ plano.id }}" data-preco="{{ plano.preco }}" disabled>
+                                                <label class="form-check-label" for="exame_{{ exame.id }}_plano_{{ plano.id }}">
+                                                    R$ {{ plano.preco }} - {{ plano.plano }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </footer>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_forma_pagamento">Forma de Pagamento:</label>
+                            <select name="forma_pagamento" id="id_forma_pagamento" class="form-control">
+                                {% for pagamento in form.fields.forma_pagamento.choices %}
+                                <option value="{{ pagamento.0 }}">{{ pagamento.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_valor_total">Total:</label>
+                            <input type="number" step="0.01" class="form-control" name="valor_total" id="id_valor_total" value="{{ form.initial.valor_total }}" readonly>
+                        </div>
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_pagamento">Pagamento:</label>
+                            <select name="pagamento" id="id_pagamento" class="form-control">
+                                {% for pagamento in form.fields.pagamento.choices %}
+                                <option value="{{ pagamento.0 }}">{{ pagamento.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group text-success font-weight-bold">
+                        <label for="id_comentario">Observação:</label>
+                        <textarea name="comentario" id="id_comentario" rows="3" class="form-control">{{ form.initial.comentario }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block" disabled>Finalizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    // Função para atualizar os planos selecionados antes de enviar o formulário
+document.addEventListener('submit', function(event) {
+    var planosSelecionados = [];
+    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+    checkboxes.forEach(function(checkbox) {
+        var exameId = checkbox.value;
+        var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
+        if (planoInput) {
+            planosSelecionados.push(planoInput.value);
+        }
+    });
+    document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
+});
+
+// Função para ativar planos de um exame ao selecionar o exame
+function ativarPlanos(checkbox) {
+    var exameId = checkbox.value;
+    var planos = document.querySelectorAll('input[name="exame_' + exameId + '_planos"]');
+    planos.forEach(function(plano) {
+        plano.disabled = false; // Ativa os planos
+    });
+}
+
+// Função para desativar planos de um exame ao desmarcar o exame
+function desativarPlanos(checkbox) {
+    var exameId = checkbox.value;
+    var planos = document.querySelectorAll('input[name="exame_' + exameId + '_planos"]');
+    planos.forEach(function(plano) {
+        plano.disabled = true; // Desativa os planos
+        plano.checked = false; // Desmarca os planos
+    });
+    atualizarValorTotal(); // Atualiza o total ao desmarcar o exame
+}
+
+// Função para atualizar o estilo dos cards de exames ao selecionar/deselecionar o exame
+function atualizarEstiloCard(checkbox) {
+    var card = checkbox.closest('.exame-card');
+    var titulo = card.querySelector('.form-check-label');
+    if (checkbox.checked) {
+        card.style.border = '2px solid #4cb061'; // Cor de destaque quando o exame é selecionado
+        titulo.style.color = '#4cb061';
+        ativarPlanos(checkbox); // Ativa os planos quando o exame é selecionado
+    } else {
+        card.style.border = 'none';
+        titulo.style.color = '';
+        desativarPlanos(checkbox); // Desativa os planos quando o exame não é selecionado
+    }
+}
+
+// Função para atualizar o valor total somente ao selecionar um plano
+function atualizarValorTotal() {
+    var total = 0;
+    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+    checkboxes.forEach(function(checkbox) {
+        var exameId = checkbox.value;
+        var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
+        if (planoInput) {
+            var precoStr = checkbox.getAttribute('data-preco').replace(',', '.');
+            total += parseFloat(precoStr); // Soma o preço do plano selecionado
+        }
+    });
+    document.getElementById('id_valor_total').value = total.toFixed(2); // Atualiza o campo de valor total
+    verificarBotaoFinalizar(total); // Verifica se o botão deve ser habilitado
+}
+
+// Função para verificar se o botão "Finalizar" deve ser habilitado
+function verificarBotaoFinalizar(total) {
+    var botaoFinalizar = document.querySelector('button[type="submit"]');
+    var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+    botaoFinalizar.disabled = total === 0 || checkboxes.length === 0; // Habilita ou desabilita o botão com base no total e no número de exames selecionados
+}
+
+// Função para ativar o plano ao selecionar o exame
+document.querySelectorAll('input[type="radio"][name$="_planos"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        atualizarValorTotal(); // Atualiza o total ao selecionar um plano
+    });
+});
+
+</script>
+{% endblock %}

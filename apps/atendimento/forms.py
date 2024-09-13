@@ -3,18 +3,28 @@ from django.forms import CheckboxSelectMultiple
 from .models import OrcamentoExames, Exame
 
 
-class OrcamentoForm(forms.ModelForm):
-    exames = forms.ModelMultipleChoiceField(
-        queryset=Exame.objects.filter(padrao=True).order_by('nome'),
-        widget=forms.CheckboxSelectMultiple(),
-        required=False,
-    )
-
+class OrcamentoForm1(forms.ModelForm):
     planos_selecionados = forms.MultipleChoiceField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = OrcamentoExames
-        fields = ['exames', 'forma_pagamento', 'valor_total', 'pagamento', 'comentario']
+        fields = ['exame', 'forma_pagamento', 'valor_total', 'pagamento', 'comentario']
+
+    def __init__(self, *args, **kwargs):
+        exames_selecionados = kwargs.pop('exames_selecionados', None)
+        super().__init__(*args, **kwargs)
+        if exames_selecionados:
+            self.fields['exame'].queryset = Exame.objects.filter(id__in=exames_selecionados)
+
+
+
+
+class OrcamentoForm(forms.ModelForm):
+    planos_selecionados = forms.MultipleChoiceField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = OrcamentoExames
+        fields = ['forma_pagamento', 'valor_total', 'pagamento', 'comentario']
 
 
 class OrcamentoFinanceiroForm(forms.ModelForm):
