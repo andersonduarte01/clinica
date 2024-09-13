@@ -124,7 +124,7 @@ Gen's | Novo Orçamento
 
 {% block script %}
 <script>
-    // Função para atualizar os planos selecionados antes de enviar o formulário
+// Função para atualizar os planos selecionados antes de enviar o formulário
 document.addEventListener('submit', function(event) {
     var planosSelecionados = [];
     var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
@@ -173,7 +173,7 @@ function atualizarEstiloCard(checkbox) {
     }
 }
 
-// Função para atualizar o valor total somente ao selecionar um plano
+// Função para atualizar o valor total ao selecionar um plano
 function atualizarValorTotal() {
     var total = 0;
     var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
@@ -181,7 +181,7 @@ function atualizarValorTotal() {
         var exameId = checkbox.value;
         var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
         if (planoInput) {
-            var precoStr = checkbox.getAttribute('data-preco').replace(',', '.');
+            var precoStr = planoInput.getAttribute('data-preco').replace(',', '.');
             total += parseFloat(precoStr); // Soma o preço do plano selecionado
         }
     });
@@ -197,11 +197,18 @@ function verificarBotaoFinalizar(total) {
 }
 
 // Função para ativar o plano ao selecionar o exame
+document.querySelectorAll('input[name^="exame_"]').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        atualizarEstiloCard(checkbox); // Atualiza o estilo do card quando o checkbox é marcado/desmarcado
+    });
+});
+
+// Função para atualizar o valor ao selecionar o plano
 document.querySelectorAll('input[type="radio"][name$="_planos"]').forEach(function(radio) {
     radio.addEventListener('change', function() {
         atualizarValorTotal(); // Atualiza o total ao selecionar um plano
     });
 });
-
 </script>
+
 {% endblock %}
