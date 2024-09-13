@@ -61,7 +61,7 @@ Gen's | Novo Orçamento
                                     <div class="card-body" style="margin-top:-15px;">
                                         <p>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="exames" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
+                                                <input class="form-check-input" type="checkbox" name="exame" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
                                                 <label class="form-check-label" for="exame_{{ exame.id }}">
                                                     {{ exame.nome }}
                                                 </label>
@@ -214,39 +214,33 @@ var cpfFormatado = formatarCPF(cpf);
 document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
 
 
+
+
 // Função para verificar se todos os exames selecionados têm um plano correspondente selecionado
 function verificarExamesComPlano() {
-    // Seleciona todos os checkboxes de exames
-    var examesSelecionados = document.querySelectorAll('input[name^="exames"]:checked');
-
-    // Verifica se cada exame selecionado tem um plano correspondente selecionado
+    var examesSelecionados = document.querySelectorAll('input[name^="exame"]:checked');
     for (var i = 0; i < examesSelecionados.length; i++) {
-        var exameId = examesSelecionados[i].value;
+        var exameId = examesSelecionados[i].id.split('_')[1]; // pega o id do exame
         var planoSelecionado = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
-
-        // Se algum exame não tiver um plano correspondente selecionado, retorna falso
         if (!planoSelecionado) {
             return false;
         }
     }
-
-    // Se todos os exames selecionados tiverem um plano correspondente selecionado, retorna verdadeiro
     return true;
 }
 
-// Função para habilitar ou desabilitar o botão "Finalizar" com base na verificação dos exames
+// Função para habilitar ou desabilitar o botão "Finalizar"
 function atualizarBotaoFinalizar() {
     var botaoFinalizar = document.querySelector('button[type="submit"]');
-
-    // Verifica se todos os exames selecionados têm um plano correspondente selecionado
     var todosExamesComPlano = verificarExamesComPlano();
-
-    // Ativa ou desativa o botão "Finalizar" com base no resultado da verificação
-    botaoFinalizar.disabled = !todosExamesComPlano;
+    botaoFinalizar.disabled = !todosExamesComPlano; // habilita ou desabilita o botão
 }
 
+
+
+
 // Adiciona um ouvinte de eventos para os checkboxes de exames
-var checkboxesExames = document.querySelectorAll('input[name^="exames"]');
+var checkboxesExames = document.querySelectorAll('input[name^="exame"]');
 checkboxesExames.forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
         // Atualiza o estado do botão "Finalizar" sempre que um checkbox de exame é alterado
