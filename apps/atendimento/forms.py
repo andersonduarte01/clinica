@@ -17,14 +17,18 @@ class OrcamentoForm1(forms.ModelForm):
             self.fields['exame'].queryset = Exame.objects.filter(id__in=exames_selecionados)
 
 
-
-
 class OrcamentoForm(forms.ModelForm):
+    exames = forms.ModelMultipleChoiceField(
+        queryset=Exame.objects.filter(padrao=True).order_by('nome'),
+        widget=forms.CheckboxSelectMultiple(),
+        required=False,
+    )
+
     planos_selecionados = forms.MultipleChoiceField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = OrcamentoExames
-        fields = ['forma_pagamento', 'valor_total', 'pagamento', 'comentario']
+        fields = ['exames', 'forma_pagamento', 'valor_total', 'pagamento', 'comentario']
 
 
 class OrcamentoFinanceiroForm(forms.ModelForm):

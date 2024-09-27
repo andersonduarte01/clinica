@@ -2,7 +2,7 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block titulo %}
-Gen's | Adicionar Lista de Exames
+Gen's | Novo Orçamento
 {% endblock %}
 {% block estilo %}
 {{ block.super }}
@@ -11,14 +11,17 @@ Gen's | Adicionar Lista de Exames
         color: #000;
         background-color: #ffffff;
         border-color: #4cb061;
-        outline: 0;
+        outline: 0
     }
-    .info-paciente {
-        margin-top: 10px;
-    }
-    .btn-remove {
-        margin-left: 10px;
-    }
+
+.blockquote-footer::before {
+    content: ""
+}
+
+.info-paciente{
+    margin-top: 10px;
+}
+
 </style>
 {% endblock %}
 {% block trilha %}
@@ -26,45 +29,180 @@ Gen's | Adicionar Lista de Exames
 {% block conteudo %}
 <div class="row">
     <div class="col col-md-12">
+        <div id="precos-selecionados"></div>
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="h4 mb-0 font-weight-bold text-uppercase text-success">{{ paciente.nome }}</h5>
-                <hr>
+            <div class="card-header" style="margin-bottom: -20px;">
+                <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success" style="margin-top: 8px;">{{paciente}}</h5>
+                 <hr>
                 <div class="row">
-                    <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente"></div>
-                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">
-                        USUARIO: {% if paciente.usuario %}{{ paciente.usuario }}{% else %}Não cadastrado{% endif %}
-                    </div>
-                    <div class="col-6 info-paciente">RG: {% if paciente.rg %}{{ paciente.rg}}{% else %}Não cadastrado{% endif %}</div>
-                    <div class="col-6 info-paciente">TELEFONE: {{ paciente.telefone }}</div>
-                    <div class="col-6 info-paciente">DATA NASC: {{ paciente.data_nascimento }}</div>
-                    <div class="col-6 info-paciente">SEXO: {{ paciente.sexo }}</div>
+                      <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente" ></div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">
+                          USUARIO:  {% if paciente.usuario %}{{paciente.usuario}}{% else %}Não cadastrado{% endif %}
+                      </div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{paciente.rg}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{paciente.telefone}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{paciente.data_nascimento}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">SEXO: {{paciente.sexo}}</div>
                 </div>
             </div>
-            <hr>
             <div class="card-body">
-                <form method="POST" action="{% url 'atendimento:exames_selecionados' paciente.pk ordem %}">  <!-- Atualize 'sua_view_de_post' com a URL correta -->
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="form-group text-success">
-                        <label for="busca-exames" class="h5 font-weight-bold">Pesquisar Exames</label>
-                        <input type="text" id="busca-exames" class="form-control mb-2" placeholder="Digite o nome do exame..." oninput="buscarExames()">
-                        <br>
-                        <div id="resultados-busca"></div>
-                    </div>
-                    <div class="h5 text-success font-weight-bold">Exames Selecionados</div>
-                    <ul id="lista-exames-selecionados"></ul>
-                    <input type="hidden" id="exames-selecionados" name="exames">  <!-- Campo oculto para os IDs dos exames -->
                     <hr>
                     <div class="form-group">
-                        <button type="button" id="proximo-passo" class="btn btn-success btn-block mt-3" onclick="proximoPasso()">Avançar</button>
+                        <label>
+                           <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success" style="margin-top: 10px;">Exames</h5>
+                        </label>
+                        <div class="row">
+                            {% for exame in form.exames.field.queryset %}
+                            <div class="col-md-4 ">
+                                <div class="card exame-card" style="margin-bottom:10px; margin-top: 10px;">
+                              <div class="card-body" style="margin-top:-15px;">
+                                  <p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="exames" id="exame_{{ exame.id }}" value="{{ exame.id }}" onchange="atualizarEstiloCard(this)">
+                                        <label class="form-check-label" for="exame_{{ exame.id }}">
+                                            {{ exame.nome }}
+                                        </label>
+                                    </div>
+                                  </p>
+                                  <footer>
+                                      {% for plano in exame.planos.all %}
+                                        <div class="form-check ml-1">
+                                            <input class="form-check-input" type="radio" name="exame_{{ exame.id }}_planos" id="exame_{{ exame.id }}_plano_{{ plano.id }}" value="{{ plano.id }}" data-preco="{{ plano.preco }}" disabled>
+                                            <label class="form-check-label" for="exame_{{ exame.id }}_plano_{{ plano.id }}">
+                                                R$ {{ plano.preco }} - {{ plano.plano }}
+                                            </label>
+                                            <input type="hidden" name="planos_selecionados" id="id_planos_selecionados">
+                                        </div>
+                                      {% endfor %}
+                                  </footer>
+                              </div>
+                            </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_forma_pagamento">Forma de Pagamento:</label>
+                            <select name="forma_pagamento" id="id_forma_pagamento" class="form-control">
+                                {% for pagamento in form.fields.forma_pagamento.choices %}
+                                <option value="{{ pagamento.0 }}">{{ pagamento.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_valor_total">Total:</label>
+                            <input type="number" step="0.01" class="form-control" name="valor_total" id="id_valor_total" value="{{ form.initial.valor_total }}">
+                        </div>
+                        <div class="form-group col-md-4 text-success font-weight-bold">
+                            <label for="id_pagamento">Pagamento:</label>
+                            <select name="pagamento" id="id_pagamento" class="form-control">
+                                {% for pagamento in form.fields.pagamento.choices %}
+                                <option value="{{ pagamento.0 }}">{{ pagamento.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group text-success font-weight-bold">
+                        <label for="id_comentario">Observação:</label>
+                        <textarea name="comentario" id="id_comentario" rows="3" class="form-control">{{ form.initial.comentario }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block" disabled>Finalizar</button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 </div>
-
+{% endblock %}
+{% block script %}
 <script>
+    // Função para atualizar os planos selecionados antes de enviar o formulário
+    document.addEventListener('submit', function(event) {
+        var planosSelecionados = [];
+        var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            var exameId = checkbox.name.split('_')[1];
+            var planoId = checkbox.value;
+            var planoInput = document.querySelector('input[name="exame_' + exameId + '_planos"][value="' + planoId + '"]');
+            if (planoInput) {
+                planosSelecionados.push(planoInput.value);
+            }
+        });
+        document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
+    });
+
+    // Função para atualizar o valor total e os planos selecionados
+    function atualizarEstiloCard(checkbox) {
+        var card = checkbox.closest('.exame-card');
+        var titulo = card.querySelector('.form-check-label');
+        if (checkbox.checked) {
+            card.style.border = '2px solid #4cb061'; // Altere para a cor de fundo desejada
+            titulo.style.color = '#4cb061';
+            ativarPlanos(checkbox); // Ativa os planos quando o exame é selecionado
+        } else {
+            card.style.border = '2px solid transparent'; // Redefina para a cor de fundo padrão
+            titulo.style.color = '';
+            desativarPlanos(checkbox);
+            desmarcarPlano(checkbox.value);
+        }
+        atualizarValorTotal(); // Atualiza o valor total
+        atualizarPlanosSelecionados(); // Atualiza os planos selecionados
+    }
+
+    // Função para ativar os checkboxes de planos correspondentes ao exame selecionado
+    function ativarPlanos(checkbox) {
+        var checkboxes = checkbox.closest('.exame-card').querySelectorAll('.form-check-input');
+        checkboxes.forEach(function(cb) {
+            cb.disabled = !checkbox.checked;
+        });
+    }
+
+    // Função para desativar os checkboxes de planos correspondentes ao exame desmarcado
+    function desativarPlanos(checkbox) {
+    var exameId = checkbox.id.split('_')[1];
+    var planosCheckboxes = document.querySelectorAll('input[name^="exame_' + exameId + '_planos"]');
+    planosCheckboxes.forEach(function(planoCheckbox) {
+        planoCheckbox.checked = false;
+        planoCheckbox.disabled = true;
+    });
+}
+
+    // Função para calcular o valor total e atualizar o campo correspondente
+    function atualizarValorTotal() {
+    var total = 0;
+    var planosSelecionados = document.querySelectorAll('input[name^="exame_"]:checked');
+    planosSelecionados.forEach(function(checkbox) {
+        var precoStr = checkbox.getAttribute('data-preco').replace(',', '.');
+        var preco = parseFloat(precoStr);
+        total += preco;
+    });
+    document.getElementById('id_valor_total').value = total.toFixed(2); // Fixa as casas decimais
+}
+
+    // Função para atualizar o campo de planos selecionados
+    function atualizarPlanosSelecionados() {
+        var planosSelecionados = [];
+        var checkboxes = document.querySelectorAll('input[name^="exame_"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            planosSelecionados.push(checkbox.value);
+        });
+        document.getElementById('id_planos_selecionados').value = planosSelecionados.join(',');
+    }
+
+    // Atualiza o valor total a cada segundo
+    document.addEventListener('DOMContentLoaded', function() {
+        setInterval(function() {
+            atualizarValorTotal();
+        }, 1000);
+    });
 
 function formatarCPF(cpf) {
     cpf = cpf.replace(/[.-]/g, '');
@@ -75,75 +213,55 @@ var cpfFormatado = (cpf == 'None') ? "Não cadastrado" : formatarCPF(cpf);
 
 document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
 
-function buscarExames() {
-    var term = document.getElementById('busca-exames').value;
 
-    if (term.length > 2) {
-        fetch(`/atendimento/add_orcamento-exames/?q=${term}`)
-            .then(response => response.json())
-            .then(data => {
-                var resultadosDiv = document.getElementById('resultados-busca');
-                resultadosDiv.innerHTML = '';
+// Função para verificar se todos os exames selecionados têm um plano correspondente selecionado
+function verificarExamesComPlano() {
+    // Seleciona todos os checkboxes de exames
+    var examesSelecionados = document.querySelectorAll('input[name^="exames"]:checked');
 
-                data.forEach(function(exame) {
-                    var exameItem = document.createElement('div');
-                    exameItem.innerHTML = `
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="exame_${exame.id}" value="${exame.id}" onchange="adicionarExame('${exame.id}', '${exame.nome}')">
-                            <label class="form-check-label" for="exame_${exame.id}">${exame.nome}</label>
-                        </div>
-                    `;
-                    resultadosDiv.appendChild(exameItem);
-                });
-            })
-            .catch(error => console.error('Erro ao buscar exames:', error));
+    // Verifica se cada exame selecionado tem um plano correspondente selecionado
+    for (var i = 0; i < examesSelecionados.length; i++) {
+        var exameId = examesSelecionados[i].value;
+        var planoSelecionado = document.querySelector('input[name="exame_' + exameId + '_planos"]:checked');
+
+        // Se algum exame não tiver um plano correspondente selecionado, retorna falso
+        if (!planoSelecionado) {
+            return false;
+        }
     }
+
+    // Se todos os exames selecionados tiverem um plano correspondente selecionado, retorna verdadeiro
+    return true;
 }
 
-function adicionarExame(id, nome) {
-    var lista = document.getElementById('lista-exames-selecionados');
-    var exameExistente = document.getElementById('exame-item-' + id);
-    var inputExames = document.getElementById('exames-selecionados');
+// Função para habilitar ou desabilitar o botão "Finalizar" com base na verificação dos exames
+function atualizarBotaoFinalizar() {
+    var botaoFinalizar = document.querySelector('button[type="submit"]');
 
-    if (exameExistente) {
-        // Remove o exame da lista e do input oculto
-        lista.removeChild(exameExistente);
-        var examesSelecionados = inputExames.value.split(',').filter(e => e != id).join(',');
-        inputExames.value = examesSelecionados;
-    } else {
-        // Adiciona o exame à lista e ao input oculto
-        var li = document.createElement('li');
-        li.id = 'exame-item-' + id;
-        li.textContent = nome;
+    // Verifica se todos os exames selecionados têm um plano correspondente selecionado
+    var todosExamesComPlano = verificarExamesComPlano();
 
-        // Adicionando o botão de remover
-        var btnRemove = document.createElement('a');
-        btnRemove.className = 'mb-1 btn-link text-danger';
-        btnRemove.innerHTML = '<i class="bi bi-x-circle-fill"></i>'; // Ícone de lixeira
-        btnRemove.style.marginLeft = '10px'; // Espaçamento entre o nome e o ícone
-        btnRemove.onclick = function() {
-            lista.removeChild(li);
-            document.getElementById('exame_' + id).checked = false; // Desmarcar o checkbox correspondente
-            var examesSelecionados = inputExames.value.split(',').filter(e => e != id).join(',');
-            inputExames.value = examesSelecionados; // Atualiza o input oculto
-        };
-
-        li.appendChild(btnRemove);
-        lista.appendChild(li);
-
-        // Atualiza o input oculto
-        inputExames.value = inputExames.value ? inputExames.value + ',' + id : id;
-    }
+    // Ativa ou desativa o botão "Finalizar" com base no resultado da verificação
+    botaoFinalizar.disabled = !todosExamesComPlano;
 }
 
-function proximoPasso() {
-    var examesSelecionados = document.getElementById('exames-selecionados').value;
-    if (examesSelecionados) {
-        window.location.href = `/atendimento/{{ordem}}/exames-selecionados/{{paciente.pk}}/?exames=${examesSelecionados}`;  // Atualize 'sua_url' com a URL desejada
-    } else {
-        alert("Nenhum exame selecionado.");
-    }
-}
+// Adiciona um ouvinte de eventos para os checkboxes de exames
+var checkboxesExames = document.querySelectorAll('input[name^="exames"]');
+checkboxesExames.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        // Atualiza o estado do botão "Finalizar" sempre que um checkbox de exame é alterado
+        atualizarBotaoFinalizar();
+    });
+});
+
+// Adiciona um ouvinte de eventos para os checkboxes de planos
+var checkboxesPlanos = document.querySelectorAll('input[name^="exame_"]');
+checkboxesPlanos.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        // Atualiza o estado do botão "Finalizar" sempre que um checkbox de plano é alterado
+        atualizarBotaoFinalizar();
+    });
+});
 
 </script>
 {% endblock %}

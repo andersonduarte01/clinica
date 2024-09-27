@@ -151,6 +151,12 @@ class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_message = 'Atendimento realizado'
     success_url = reverse_lazy('agenda:ordem_chegada_lista')
 
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
+        contexto['paciente'] = paciente
+        return contexto
+
     def form_valid(self, form):
         orcamento = form.save(commit=False)
         paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
@@ -159,24 +165,27 @@ class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
         with transaction.atomic():
             orcamento.save()
+            exames_selecionados_ids = self.request.POST.getlist('exames')
+            sequencia_selecionada = []
+            planos_selecionados = self.request.POST.getlist('planos_selecionados')
+            planos = [plano for plano in planos_selecionados if plano]
+            numeros = []
+            for plano in planos:
+                numeros.extend(map(int, plano.split(',')))
 
-            # Processar os exames selecionados
-            exames_selecionados_ids = self.request.POST.get('exames_selecionados', '').split(',')
-            for exame_id in exames_selecionados_ids:
-                exame = get_object_or_404(Exame, pk=exame_id)
-                orcamento.exames.add(exame)
+            for numero in numeros:
+                sequencia_selecionada.append(numero)
+
+            for numero in exames_selecionados_ids:
+                id = int(numero)
+                obj_exame = objeto_exame(pk=id, sequencia=numeros)
+                orcamento.exame.add(obj_exame)
 
             ordem.status_atendido = 'ATENDIDO'
             ordem.save()
 
+        orcamento.save()
         return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data(**kwargs)
-        paciente = get_object_or_404(Usuario, pk=self.kwargs['pk'])
-        contexto['paciente'] = paciente
-        contexto['ordem'] = self.kwargs['id']
-        return contexto
 
 
 def add_orcamento_exames(request):
