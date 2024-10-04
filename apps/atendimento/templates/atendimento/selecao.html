@@ -52,17 +52,13 @@ Gen's | Novo Orçamento
                     <div class="h6 mb-0 col-6 info-paciente">SEXO: {{ paciente.sexo }}</div>
                 </div>
             </div>
-            <hr>
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6">
-                        <div class="form-group">
-                            <h6 class="h6 mb-3 font-weight-bold text-uppercase text-success text-center">Exames Selecionados</h6> <!-- Título adicionado -->
-                            <div id="lista_exames_selecionados" class="mb-4 list-group"></div> <!-- Mudança aqui -->
-                        </div>
                         <hr>
+                        <div id="lista_exames_selecionados" class="mb-4"></div>
                         <div class="row">
                             <div class="form-group col-md-4 text-success font-weight-bold">
                                 <label for="id_forma_pagamento">Forma de Pagamento:</label>
@@ -95,9 +91,8 @@ Gen's | Novo Orçamento
                         </div>
                     </div>
                         <div class="col-md-6">
-                        <h6 class="h6 mb-3 font-weight-bold text-uppercase text-success">Exames</h6>
+                        <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success">Exames</h5>
                         <input type="text" id="busca_exames" class="form-control mb-3" placeholder="Buscar exames...">
-                            <hr>
                         <div id="lista_exames" class="row">
                             {% for exame in form.exames.field.queryset %}
                             <div class="col-md-12">
@@ -167,12 +162,12 @@ document.getElementById('busca_exames').addEventListener('input', function() {
                 var preco = parseFloat(precoStr);
                 var nomeExame = document.querySelector('label[for="exame_' + exameId + '"]').innerText;
                 lista.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${nomeExame}: R$ ${preco.toFixed(2)}
-                    <button class="btn-excluir" onclick="removerExame('${exameId}')">
-                        <i class="bi bi-x-circle-fill"></i>
-                    </button>
-                </li>`;
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>${nomeExame}: R$ ${preco.toFixed(2)}</div>
+                        <button class="btn-excluir" onclick="removerExame('${exameId}')">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </div>`;
                 total += preco; // Atualiza o total
                 planosSelecionados.push(planoSelecionadoExame.value); // Adiciona o plano selecionado
         }

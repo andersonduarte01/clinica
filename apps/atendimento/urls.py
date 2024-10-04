@@ -18,4 +18,6 @@ urlpatterns = [
     path('relatorio/diario/', views.RelatorioDiario.as_view(), name='relatorio_diario'),
     path('relatorio/semanal/', views.RelatorioDSemanal.as_view(), name='relatorio_semanal'),
     path('relatorio/periodo/', views.RelatorioPeriodo.as_view(), name='relatorio_periodo'),
+    path('ajax/buscar_exames/', views.buscar_exames, name='buscar_exames'),
+
 ]

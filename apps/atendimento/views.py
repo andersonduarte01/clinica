@@ -144,6 +144,28 @@ class OrcamentoOrdem1(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             self.fields['exame'].queryset = Exame.objects.filter(id__in=exames_selecionados)
 
 
+def buscar_exames_planos(request):
+    termo = request.GET.get('q', '')
+    exames = Exame.objects.none()  # Exibe nada por padrão
+    if termo:
+        exames = Exame.objects.filter(nome__icontains=termo).prefetch_related('planos')
+
+    resultados = []
+    for exame in exames:
+        planos = [{'id': plano.id, 'nome': plano.plano, 'preco': plano.preco} for plano in exame.planos.all()]
+        resultados.append({'id': exame.id, 'nome': exame.nome, 'planos': planos})
+
+    return JsonResponse(resultados, safe=False)
+
+
+def add_orcamento_exames(request):
+    term = request.GET.get('q', '')
+    exames = Exame.objects.filter(nome__icontains=term, padrao=True)[:10]
+    resultados = [{'id': exame.id, 'nome': exame.nome} for exame in exames]
+    print(f'RESULTADOS: {resultados}')
+    return JsonResponse(resultados, safe=False)
+
+
 class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = OrcamentoExames
     form_class = OrcamentoForm
@@ -188,14 +210,11 @@ class OrcamentoOrdem(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-def add_orcamento_exames(request):
-    term = request.GET.get('q', '')
-    exames = Exame.objects.filter(nome__icontains=term, padrao=True)[:10]
-    resultados = [{'id': exame.id, 'nome': exame.nome} for exame in exames]
-    print(f'RESULTADOS: {resultados}')
-    return JsonResponse(resultados, safe=False)
-
-
+def buscar_exames(request):
+    query = request.GET.get('q', '')
+    exames = Exame.objects.filter(nome__icontains=query, padrao=True) if query else []
+    exames_list = [{'id': exame.id, 'nome': exame.nome} for exame in exames]
+    return JsonResponse({'exames': exames_list})
 
 
 class OrcamentoLista(LoginRequiredMixin, ListView):

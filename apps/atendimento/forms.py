@@ -23,13 +23,11 @@ class OrcamentoForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple(),
         required=False,
     )
-
     planos_selecionados = forms.MultipleChoiceField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = OrcamentoExames
         fields = ['exames', 'forma_pagamento', 'valor_total', 'pagamento', 'comentario']
-
 
 class OrcamentoFinanceiroForm(forms.ModelForm):
     class Meta:
