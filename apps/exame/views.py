@@ -986,7 +986,7 @@ def criar_laudo_medico(request, pk):
     c.drawString(posicao_horizontal_site, posicao_vertical_site, site)
 
     # Adicionar a imagem entre as linhas horizontais superior e de 3cm
-    imagem = "https://www.thefirstwrite.com/wp-content/uploads/2021/09/django-framework.jpg"  # Caminho para a imagem
+    imagem = "https://gensdiagnostica.com.br/static/img/gens.png"  # Caminho para a imagem
     largura_imagem = 140  # Largura da imagem em pontos
     altura_imagem = 85  # Altura da imagem em pontos
     c.drawImage(imagem, ponto1[0], altura_linha_3cm + 1, width=largura_imagem, height=altura_imagem)
