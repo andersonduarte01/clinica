@@ -17,7 +17,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
@@ -1255,32 +1255,33 @@ def buscar_exame(request):
 
 def etiqueta_exame(request, pk):
     exame = get_object_or_404(Exame, pk=pk)
-
     orcamento = OrcamentoExames.objects.filter(exame=exame).first()
 
-    # Inicializar a etiqueta ZPL
-    l = zpl.Label(100, 60)
-    height = 0
+    # Criar uma resposta HTTP com o conteúdo do PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="etiqueta_{exame.codigo}.pdf"'
 
-    # Adicionar o nome do orçamento, se disponível
+    # Criar um objeto canvas para o PDF
+    c = canvas.Canvas(response, pagesize=letter)
+    width, height = letter  # Pega as dimensões da página
+
+    # Definir a posição inicial para o texto
+    y_position = height - 40  # Espaço do topo
+
+    # Adicionar o nome do paciente, se disponível
     if orcamento:
-        l.origin(0, 0)
-        l.write_text({orcamento.paciente.nome}, char_height=10, char_width=8, line_width=60, justification='C')
-        l.endorigin()
-        height += 13
+        c.drawString(100, y_position, orcamento.paciente.nome)
+        y_position -= 20  # Move a posição para baixo
 
     # Adicionar o nome do exame
-    l.origin(0, height)
-    l.write_text(exame.nome, char_height=10, char_width=8, line_width=60, justification='C')
-    l.endorigin()
-    height += 13
+    c.drawString(100, y_position, exame.nome)
+    y_position -= 20  # Move a posição para baixo
 
     # Adicionar o código do exame
-    l.origin(0, height)
-    l.write_text({exame.codigo}, char_height=10, char_width=8, line_width=60, justification='C')
-    l.endorigin()
-    height += 13
+    c.drawString(100, y_position, exame.codigo)
 
-    # Gerar e visualizar o ZPL
-    print(l.dumpZPL())
-    l.preview()
+    # Finaliza o PDF
+    c.showPage()
+    c.save()
+
+    return response

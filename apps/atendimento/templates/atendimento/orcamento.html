@@ -65,7 +65,7 @@ Gen's | Novo Orçamento
                         <hr>
                         <div class="row">
                             <div class="form-group col-md-4 text-success font-weight-bold">
-                                <label for="id_forma_pagamento">Forma de Pagamento:</label>
+                                <label for="id_forma_pagamento">Pagamento:</label>
                                 <select name="forma_pagamento" id="id_forma_pagamento" class="form-control">
                                     {% for pagamento in form.fields.forma_pagamento.choices %}
                                     <option value="{{ pagamento.0 }}">{{ pagamento.1 }}</option>

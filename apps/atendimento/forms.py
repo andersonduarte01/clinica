@@ -29,7 +29,14 @@ class OrcamentoForm(forms.ModelForm):
         model = OrcamentoExames
         fields = ['exames', 'forma_pagamento', 'valor_total', 'pagamento', 'comentario']
 
+
 class OrcamentoFinanceiroForm(forms.ModelForm):
+    class Meta:
+        model = OrcamentoExames
+        fields = ('forma_pagamento', 'valor_total', 'pagamento', 'comentario')
+
+
+class AtualizarPagamentoForm(forms.ModelForm):
     class Meta:
         model = OrcamentoExames
         fields = ('forma_pagamento', 'valor_total', 'pagamento', 'comentario')

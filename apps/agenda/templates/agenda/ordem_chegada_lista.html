@@ -47,6 +47,9 @@ Gen's | Lista de Atendimentos
               </a>
                 <i class="bi bi-x text-danger"></i>
               {% elif atendimento.status_atendido == 'ATENDIDO'%}
+                <a href="{% url 'atendimento:pdf_comprovate' pk=atendimento.nome_paciente.pk data=data atendimento=atendimento.id %}" class="text-danger" data-toggle="tooltip" data-placement="top" title="Baixar Comprovante">
+                  <i class="bi bi-file-pdf"></i>
+                </a>
                 <a href="{% url 'atendimento:ver_atendimento1' pk=atendimento.nome_paciente.pk data=data %}" class="text-success" data-toggle="tooltip" data-placement="top" title="Visualizar atendimento">
                   <i class="bi bi-eye"></i>
                 </a>

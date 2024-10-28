@@ -1,0 +1,79 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Atualizar Pagamento
+{% endblock %}
+{% block estilo %}
+{{ block.super }}
+<style>
+    .form-control:focus {
+        color: #000;
+        background-color: #ffffff;
+        border-color: #4cb061;
+        outline: 0
+    }
+
+.blockquote-footer::before {
+    content: ""
+}
+
+.info-paciente{
+    margin-top: 10px;
+}
+
+</style>
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold text-uppercase">ATUALIZAR Pagamento</h4>
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-md-12">
+        <div id="precos-selecionados"></div>
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">{{orcamento.paciente}}</h5>
+                    <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">{{orcamento.data_cadastro|date:"d/m/Y"}}</h5>
+                </div>
+                <hr>
+                <div class="row">
+                      <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente" ></div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:
+                          {% if orcamento.paciente.usuario %}{{orcamento.paciente.usuario}}{% else %}Não cadastrado{% endif %}
+                      </div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
+                      <div class="h6 mb-0 col-6 col-md-6 info-paciente">SEXO: {{orcamento.paciente.sexo}}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <hr>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <hr>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block">Atualizar Financeiro</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function formatarCPF(cpf) {
+    cpf = cpf.replace(/[.-]/g, '');
+    return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
+}
+var cpf = "{{orcamento.paciente.cpf}}";
+var cpfFormatado = (cpf == 'None') ? "Não cadastrado" : formatarCPF(cpf);
+
+document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
+</script>
+{% endblock %}
+
