@@ -1007,7 +1007,7 @@ def criar_laudo_medico(request, pk):
     # Escrever 'EXAME' entre altura_linha_4cm e altura_linha_3cm, tamanho 18, em negrito
     c.setFont("Helvetica-Bold", 18)  # Definir a fonte em negrito e o tamanho do texto
     c.setFillColorRGB(0, 0.5, 0)  # Definir a cor preta (RGB)
-    texto_exame = f'{exame}'
+    texto_exame = f''
     largura_texto_exame = c.stringWidth(texto_exame, "Helvetica-Bold", 18)  # Obter a largura do texto em pontos
 
     # Calcular as coordenadas para centralizar o texto entre a linha de 4cm e a linha de 3cm
