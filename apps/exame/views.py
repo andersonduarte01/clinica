@@ -904,8 +904,8 @@ def criar_laudo_medico(request, pk):
         return HttpResponse('Erro ao baixar a imagem', status=500)
 
     imagem_reader = ImageReader(BytesIO(imagem_bytes))
-    largura_imagem = 50
-    altura_imagem = 50
+    largura_imagem = 100
+    altura_imagem = 100
     posicao_horizontal_central = (largura_pagina - largura_imagem) / 2
     c.drawImage(imagem_reader, posicao_horizontal_central, altura_linha_26cm - 20, width=largura_imagem, height=altura_imagem)
 
