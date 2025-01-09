@@ -28,6 +28,7 @@ urlpatterns = [
     # temporario
     path('mostrar/todos/lista/', views.ExamesTodosLista.as_view(), name='exame_todos_lista'),
     path('<int:pk>/pdf/', views.criar_laudo_medico, name='pdf'),
+    path('preencher/<int:pk>/folha/', views.preencher_laudo_medico, name='preencher_pdf'),
 
     # area medica #
     path('area/restrita/<int:pk>/realizar/', views.realizar_exame, name='exame_medico_ver'),
