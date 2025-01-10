@@ -758,7 +758,7 @@ def criar_laudo_medico(request, pk):
     tabela_referencia_altura_ref = 0
 
     if data_referencia_fator != None:
-        if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 130:
+        if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 150:
             c.showPage()
             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
@@ -792,7 +792,7 @@ def criar_laudo_medico(request, pk):
     tabela_referencia_altura_esp = 0
     if data_referencia_esperado != None:
 
-        if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 130:
+        if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 150:
             c.showPage()
             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
