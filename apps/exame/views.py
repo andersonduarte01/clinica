@@ -758,7 +758,7 @@ def criar_laudo_medico(request, pk):
     tabela_referencia_altura_ref = 0
 
     if data_referencia_fator != None:
-        if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 200:
+        if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 150:
             c.showPage()
             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
@@ -792,11 +792,10 @@ def criar_laudo_medico(request, pk):
     tabela_referencia_altura_esp = 0
     if data_referencia_esperado != None:
 
-        if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 200:
+        if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 150:
             c.showPage()
             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
-
             larguras_colunas_esperado = [212, 100, 225]  # total 537
             te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
             largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
@@ -861,26 +860,25 @@ def criar_laudo_medico(request, pk):
 
         obs_1 += 1
 
-        # Desenhar a linha paralela à linha superior do paralelogramo (a 26cm)
-        linha_inferior = adicionar_linha_paralela(c, ponto1, ponto2, intervalo=0)
-        imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
+    # Desenhar a linha paralela à linha superior do paralelogramo (a 26cm)
+    linha_inferior = adicionar_linha_paralela(c, ponto1, ponto2, intervalo=0)
+    imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
 
-        # Baixa a imagem da URL
-        response_imagem = requests.get(imagem_url)
-        if response_imagem.status_code == 200:
-            imagem_bytes = response_imagem.content
-        else:
-            return HttpResponse('Erro ao baixar a imagem', status=500)
+    # Baixa a imagem da URL
+    response_imagem = requests.get(imagem_url)
+    if response_imagem.status_code == 200:
+       imagem_bytes = response_imagem.content
+    else:
+       return HttpResponse('Erro ao baixar a imagem', status=500)
 
-        imagem_reader = ImageReader(BytesIO(imagem_bytes))
-        largura_imagem = 160
-        altura_imagem = 140
-        posicao_horizontal_central = ((19 * 28.35) - largura_imagem) / 2
-        c.drawImage(imagem_reader, posicao_horizontal_central, linha_inferior + 20, width=largura_imagem,
-                    height=altura_imagem)
+    imagem_reader = ImageReader(BytesIO(imagem_bytes))
+    largura_imagem = 128
+    altura_imagem = 112
+    posicao_horizontal_central = ((19 * 28.35) - largura_imagem) / 2
+    c.drawImage(imagem_reader, posicao_horizontal_central, linha_inferior + 20, width=largura_imagem,
+    height=altura_imagem)
 
     c.save()
-
     return response
 
 def preencher_laudo_medico(request, pk):
