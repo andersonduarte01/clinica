@@ -20,6 +20,7 @@ Gen's | Exames Aguardando
             <th class="text-center">Status</th>
             <th class="text-center">Realizar</th>
             <th class="text-center">Folha</th>
+            <th class="text-center">Etiqueta</th>
 <!--            {% if user.usuario.adm %}-->
 <!--            <th class="text-center">Editar/Excluir</th>-->
 <!--            {% endif %}-->
@@ -32,6 +33,7 @@ Gen's | Exames Aguardando
             <th class="text-uppercase text-success text-center">Status</th>
             <th class="text-uppercase text-success text-center">Realizar</th>
             <th class="text-uppercase text-success text-center">Folha</th>
+            <th class="text-uppercase text-success text-center">Etiqueta</th>
 <!--            {% if user.usuario.adm %}-->
 <!--            <th class="text-uppercase text-success text-center">Editar/Excluir</th>-->
 <!--            {% endif %}-->
@@ -52,6 +54,11 @@ Gen's | Exames Aguardando
               </td>
               <td class="text-center">
                 <a href="{% url 'exame:preencher_pdf' pk=exame.pk %}" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-file-pdf"></i>
+                </a>
+              </td>
+              <td class="text-center">
+                <a href="{% url 'exame:etiqueta_exame' pk=exame.pk %}" class="text-decoration-none text-success font-weight-bold">
                   <i class="bi bi-file-pdf"></i>
                 </a>
               </td>

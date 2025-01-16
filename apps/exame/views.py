@@ -1613,36 +1613,37 @@ def buscar_exame(request):
         return JsonResponse({'data': res})
     return JsonResponse({})
 
-
 def etiqueta_exame(request, pk):
+    # Dimensões personalizadas (largura x altura em pontos)
+
     exame = get_object_or_404(Exame, pk=pk)
     orcamento = OrcamentoExames.objects.filter(exame=exame).first()
-
-    # Criar uma resposta HTTP com o conteúdo do PDF
+    etiqueta_tamanho = (283, 70)  # 100 mm x 50 mm
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="etiqueta_{exame.codigo}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="etiqueta_{orcamento.paciente.nome}.pdf"'
+# Criando o PDF
+    c = canvas.Canvas(response, pagesize=etiqueta_tamanho)
+    c.setFont("Helvetica-Bold", 9)
+    largura_etiqueta, altura_etiqueta = etiqueta_tamanho
 
-    # Criar um objeto canvas para o PDF
-    c = canvas.Canvas(response, pagesize=letter)
-    width, height = letter  # Pega as dimensões da página
+    altura_inicio = altura_etiqueta - 25
+    palavra = f'{orcamento.paciente.nome}'
+    exame_nome = f'{exame.nome}'
 
-    # Definir a posição inicial para o texto
-    y_position = height - 40  # Espaço do topo
-
-    # Adicionar o nome do paciente, se disponível
-    if orcamento:
-        c.drawString(100, y_position, orcamento.paciente.nome)
-        y_position -= 20  # Move a posição para baixo
-
-    # Adicionar o nome do exame
-    c.drawString(100, y_position, exame.nome)
-    y_position -= 20  # Move a posição para baixo
-
-    # Adicionar o código do exame
-    c.drawString(100, y_position, exame.codigo)
-
-    # Finaliza o PDF
-    c.showPage()
+    largura_nome = c.stringWidth(palavra[:50], "Helvetica-Bold", 9)
+    x = (largura_etiqueta - largura_nome) / 2
+    c.drawString(x, altura_inicio, palavra[:50])
+    altura_inicio -= 15
+    c.setFont("Helvetica", 9)
+    largura_exame = c.stringWidth(exame_nome[:46], "Helvetica", 9)
+    x = (largura_etiqueta - largura_exame) / 2
+    c.drawString(x, altura_inicio, exame_nome[:46])
+    altura_inicio -= 13
+    c.setFont("Helvetica", 7)
+    largura_codigo = c.stringWidth(f'{exame.codigo}', "Helvetica", 7)
+    x = (largura_etiqueta - largura_codigo) / 2
+    c.drawString(x, altura_inicio, f'{exame.codigo}')
+    altura_inicio -= 10
     c.save()
-
     return response
+
