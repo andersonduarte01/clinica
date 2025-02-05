@@ -36,4 +36,6 @@ urlpatterns = [
     path('pesquisar/', views.BuscarExame.as_view(), name='pesquisar_exame'),
     path('buscar/exame/', views.buscar_exame, name='buscar_exame'),
     path('imprimir/etiqueta/<int:pk>/', views.etiqueta_exame, name='etiqueta_exame'),
+    #grupo
+    path('add/grupo/', views.GrupoCreate.as_view(), name='add_grupo'),
 ]

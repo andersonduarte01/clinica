@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import TextInput
-from ..exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado
+from ..exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado, GrupoExame
 from .validacao import validate_pdf_extension
 
 class ExameForm(forms.ModelForm):
@@ -88,3 +88,15 @@ class ReferenciaExameForm(forms.ModelForm):
         widgets = {
             'valor_obtido': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+
+class GrupoExamesForm(forms.ModelForm):
+    class Meta:
+        model = GrupoExame
+        fields = ('nome', 'descricao', 'ativo', 'exames')
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            exames_filtrados = Exame.objects.filter(padrao=True)
+            print("Exames filtrados:", exames_filtrados)  # Verificar se há exames com padrao=True
+            self.fields['exames'].queryset = exames_filtrados

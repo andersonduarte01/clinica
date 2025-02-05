@@ -76,3 +76,17 @@ class ValorEsperado(models.Model):
     referencia = models.ForeignKey(ReferenciaExame, on_delete=models.CASCADE, related_name='padrao')
     tipo_valor = models.CharField(verbose_name='Nome', max_length=120)
     valor_esperado = models.CharField(verbose_name='Padrão', max_length=120)
+
+
+class GrupoExame(models.Model):
+    nome = models.CharField(verbose_name='Nome do Grupo/Área', max_length=180, unique=True)
+    descricao = models.TextField(verbose_name='Descrição', null=True, blank=True)
+    ativo = models.BooleanField(default=True)
+    exames = models.ManyToManyField('Exame', related_name='grupos', verbose_name='Exames')
+
+    def __str__(self):
+        return self.nome
+
+    class Meta:
+        verbose_name = 'Grupo de Exames'
+        verbose_name_plural = 'Grupos de Exames'

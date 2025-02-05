@@ -26,8 +26,8 @@ from apps.atendimento.models import OrcamentoExames
 from apps.core.models import Usuario
 from apps.exame.exame_create import objeto_exame
 from apps.exame.forms import ExameForm, ReferenciaForm, FatorReferenciaForm, ValorEsperadoForm, ExameFormUpdate, \
-    ExameAtendimentoForm, ReferenciaExameForm, ExameMedicForm, ExameMedicTerceirizado
-from apps.exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado
+    ExameAtendimentoForm, ReferenciaExameForm, ExameMedicForm, ExameMedicTerceirizado, GrupoExamesForm
+from apps.exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado, GrupoExame
 from apps.exame.relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto
 
 
@@ -1647,3 +1647,17 @@ def etiqueta_exame(request, pk):
     c.save()
     return response
 
+#### GRUPOS DE EXAMES ####
+
+
+class GrupoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    form_class = GrupoExamesForm
+    model = GrupoExame
+    template_name = 'exame/grupo_add.html'
+    success_message = 'Grupo criado com sucesso'
+    success_url = '/'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['exames'].queryset = Exame.objects.filter(padrao=True)
+        return form

@@ -409,7 +409,7 @@ class RelatorioPeriodo(LoginRequiredMixin, ListView):
         return contexto
 
 
-def criar_comprovante(request, pk, data, atendimento):
+def criar_comprovante1(request, pk, data, atendimento):
     att = get_object_or_404(OrdemChegada, id=atendimento)
     paciente = get_object_or_404(Usuario, pk=pk)
     data_obj = datetime.strptime(data, "%Y-%m-%d")
@@ -513,7 +513,6 @@ def criar_comprovante(request, pk, data, atendimento):
         posicao_vertical_exames -= 14
         c.drawString(posicao_horizontal_exame, posicao_vertical_exames, texto_exame)
         planos = exame.planos.all()
-        p1 = ''
         for plano in planos:
             c.drawString(ponto1[0] + 485, posicao_vertical_exames, f'R$ {plano.preco}')
             contador += 1
@@ -537,5 +536,148 @@ def criar_comprovante(request, pk, data, atendimento):
     c.drawString(ponto1[0] + 370, altura_linha_4cm - 55, f'Nº atendimento: {att.sequencia}')
 
     c.save()
+    return response
+
+def criar_comprovante(request, pk, data, atendimento):
+    att = get_object_or_404(OrdemChegada, id=atendimento)
+    paciente = get_object_or_404(Usuario, pk=pk)
+    data_obj = datetime.strptime(data, "%Y-%m-%d")
+    data_formatada = data_obj.strftime("%d/%m/%Y")
+    atendimento = get_object_or_404(OrcamentoExames, paciente=paciente, data_cadastro=data)
+    exames = atendimento.exame.all()
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{atendimento.paciente}.pdf"'
+
+
+    largura_pagina, altura_pagina = A4
+    largura_paralelogramo = 19 * 28.35
+    altura_paralelogramo = 10 * 28.35
+    margem_esquerda = (largura_pagina - largura_paralelogramo) / 2
+    margem_superior = 18.5 * 28.35
+
+    ponto1 = (margem_esquerda, margem_superior)
+    ponto2 = (ponto1[0] + largura_paralelogramo, margem_superior)
+    ponto3 = (largura_pagina - margem_esquerda, margem_superior + altura_paralelogramo)
+    ponto4 = (ponto1[0], ponto1[1] + altura_paralelogramo)
+
+    c = canvas.Canvas(response, pagesize=A4)
+    c.setStrokeColorRGB(0.8, 0.8, 0.8)
+    c.setLineWidth(2)
+
+    #c.line(ponto1[0], ponto1[1], ponto2[0], ponto2[1])
+    #c.line(ponto2[0], ponto2[1], ponto3[0], ponto3[1])
+    c.line(ponto3[0], ponto3[1], ponto4[0], ponto4[1])
+
+
+    altura_linha_4cm = ponto3[1] - 1 * 28.35
+    c.line(ponto1[0], altura_linha_4cm, ponto2[0], altura_linha_4cm)
+
+    altura_linha_65cm = ponto3[1] - 3.3 * 28.35
+    c.line(ponto1[0], altura_linha_65cm, ponto2[0], altura_linha_65cm)
+
+    altura_linha_exames = ponto3[1] - 4 * 28.35
+    c.line(ponto1[0], altura_linha_exames, ponto2[0], altura_linha_exames)
+    #
+    # altura_linha_7cm = ponto3[1] - 7.3 * 28.35
+    # c.line(ponto1[0], altura_linha_7cm, ponto2[0], altura_linha_7cm)
+    #
+    # altura_linha_100cm = ponto3[1] - 8 * 28.35
+    # c.line(ponto1[0], altura_linha_100cm, ponto2[0], altura_linha_100cm)
+
+
+    c.setFillColorRGB(0, 0.7, 0.3)
+
+    c.setFont("Helvetica-Bold", 18)
+    texto_exame = 'Comprovante de Atendimento'
+    largura_texto_exame = c.stringWidth(texto_exame, "Helvetica-Bold", 18)
+    posicao_horizontal_exame = (ponto1[0] + ponto2[0] - largura_texto_exame) / 2
+    posicao_vertical_exame = altura_linha_4cm + 8
+    c.drawString(posicao_horizontal_exame, posicao_vertical_exame, texto_exame)
+
+    c.setFont("Helvetica-Bold", 12)
+    texto_exame = 'EXAMES'
+    largura_texto_exame = c.stringWidth(texto_exame, "Helvetica-Bold", 12)
+    posicao_horizontal_exame = (ponto1[0] + ponto2[0] - largura_texto_exame) / 2
+    posicao_vertical_exame = altura_linha_65cm - 14
+    c.drawString(posicao_horizontal_exame, posicao_vertical_exame, texto_exame)
+
+    # Exames a serem realizados
+    posicao_vertical_exames = altura_linha_exames - 5
+    contador = 1
+    for exame in exames:
+        c.setFont("Helvetica-Bold", 9)
+        texto_exame = f' {contador}. {exame}'
+        posicao_horizontal_exame = ponto1[0] + 8
+        posicao_vertical_exames -= 14
+        c.drawString(posicao_horizontal_exame, posicao_vertical_exames, texto_exame)
+        planos = exame.planos.all()
+        for plano in planos:
+            c.drawString(ponto1[0] + 485, posicao_vertical_exames, f'R$ {plano.preco}')
+            contador += 1
+
+    altura_linha_7cm = posicao_vertical_exames - 14
+    c.line(ponto1[0], altura_linha_7cm, ponto2[0], altura_linha_7cm)
+
+    altura_linha_100cm = altura_linha_7cm - (0.7 * 28.35)
+    c.line(ponto1[0], altura_linha_100cm, ponto2[0], altura_linha_100cm)
+
+    c.setFont("Helvetica-Bold", 9)
+    texto_exame = f'Status: {atendimento.pagamento}'
+    posicao_horizontal_exame = ponto1[0] + 8
+    posicao_vertical_exame = altura_linha_7cm - 14
+    c.drawString(posicao_horizontal_exame, posicao_vertical_exame, texto_exame)
+    c.drawString(ponto1[0] + 486, posicao_vertical_exame, f'R$ {atendimento.calcular_total()}')
+
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColorRGB(0, 0.7, 0.3)
+    c.drawString(ponto1[0] + 8, altura_linha_4cm - 15, f'Nome: {atendimento.paciente}')
+    cpf_1 = atendimento.paciente.cpf if atendimento.paciente.cpf else 'Não cadastrado'
+    c.drawString(ponto1[0] + 8, altura_linha_4cm - 35, f'CPF: {cpf_1}')
+    c.drawString(ponto1[0] + 8, altura_linha_4cm - 55, f'Data de Nascimento: {atendimento.paciente.data_nascimento}')
+    c.drawString(ponto1[0] + 370, altura_linha_4cm - 15, f'Sexo: {atendimento.paciente.sexo}')
+    c.drawString(ponto1[0] + 370, altura_linha_4cm - 35, f'Data do atend: {data_formatada}')
+    c.drawString(ponto1[0] + 370, altura_linha_4cm - 55, f'Nº atendimento: {att.sequencia}')
+
+    # RODAPE
+
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0, 0.5, 0)
+    texto = "Gen's Diagnóstica"
+    largura_texto = c.stringWidth(texto, "Helvetica-Bold", 10)
+    posicao_horizontal = (ponto1[0] + ponto2[0] - largura_texto) / 2
+    posicao_vertical = altura_linha_100cm - 0.55 * 28.35
+    c.drawString(posicao_horizontal, posicao_vertical, texto)
+
+    c.setFont("Helvetica", 7)
+    c.setFillColorRGB(0, 0.7, 0.3)
+
+    texto_laboratorio = "Laboratório de análises clínicas"
+    largura_texto_laboratorio = c.stringWidth(texto_laboratorio, "Helvetica", 7)
+    posicao_horizontal_laboratorio = (ponto1[0] + ponto2[0] - largura_texto_laboratorio) / 2
+    posicao_vertical -= 8
+    c.drawString(posicao_horizontal_laboratorio, posicao_vertical, texto_laboratorio)
+
+    endereco = "Rua Fortunato Silva, Nº164, Pedra Branca/CE"
+    largura_endereco = c.stringWidth(endereco, "Helvetica", 7)
+    posicao_horizontal_endereco = (ponto1[0] + ponto2[0] - largura_endereco) / 2
+    posicao_vertical -= 8
+    c.drawString(posicao_horizontal_endereco, posicao_vertical, endereco)
+
+    telefone = "Tel: (88) 9 9995 0037 / 3515 1822"
+    largura_telefone = c.stringWidth(telefone, "Helvetica", 7)
+    posicao_horizontal_telefone = (ponto1[0] + ponto2[0] - largura_telefone) / 2
+    posicao_vertical -= 8
+    c.drawString(posicao_horizontal_telefone, posicao_vertical, telefone)
+
+    site = "gensdiagnostica.com.br"
+    largura_site = c.stringWidth(site, "Helvetica", 7)
+    posicao_horizontal_site = (ponto1[0] + ponto2[0] - largura_site) / 2
+    posicao_vertical -= 8
+    c.drawString(posicao_horizontal_site, posicao_vertical, site)
+
+    c.line(ponto1[0], posicao_vertical - 10, ponto2[0], posicao_vertical - 10)
+    #c.line(ponto4[0], ponto4[1], ponto1[0], ponto1[1])
+    c.save()
+
     return response
 
