@@ -48,14 +48,27 @@ Gen's | Exames Aguardando
                 {{exame.status_exame}}
               </td>
               <td class="text-center">
+                {% if exame.terceirizado %}
+                <a href="#" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-asterisk"></i>
+                </a>
+                {% else %}
                 <a href="{% url 'exame:exame_medico_ver' pk=exame.pk %}" class="text-decoration-none text-primary font-weight-bold">
                   <i class="bi bi-box-arrow-in-right"></i>
                 </a>
+                {% endif %}
               </td>
               <td class="text-center">
+                {% if exame.terceirizado %}
+                <a href="#" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-asterisk"></i>
+                </a>
+                {% else %}
                 <a href="{% url 'exame:preencher_pdf' pk=exame.pk %}" class="text-decoration-none text-danger font-weight-bold">
                   <i class="bi bi-file-pdf"></i>
                 </a>
+                {% endif %}
+
               </td>
               <td class="text-center">
                 <a href="{% url 'exame:etiqueta_exame' pk=exame.pk %}" class="text-decoration-none text-success font-weight-bold">

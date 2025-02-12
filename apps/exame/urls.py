@@ -29,13 +29,17 @@ urlpatterns = [
     path('mostrar/todos/lista/', views.ExamesTodosLista.as_view(), name='exame_todos_lista'),
     path('<int:pk>/pdf/', views.criar_laudo_medico, name='pdf'),
     path('preencher/<int:pk>/folha/', views.preencher_laudo_medico, name='preencher_pdf'),
+    path('preencher/grupo/folha/', views.preencher_laudo, name='laudo_pdf'),
 
     # area medica #
     path('area/restrita/<int:pk>/realizar/', views.realizar_exame, name='exame_medico_ver'),
     path('terceirizado/area/restrita/<int:pk>/anexar/', views.ExameTerceirizado.as_view(), name='exame_medico_anexar'),
     path('pesquisar/', views.BuscarExame.as_view(), name='pesquisar_exame'),
+    path('terceirizado/pesquisar/', views.BuscarExameterceirizado.as_view(), name='pesquisar_exame_terceirizado'),
     path('buscar/exame/', views.buscar_exame, name='buscar_exame'),
+    path('terceirizado/buscar/exame/', views.buscar_exame_terceirizado, name='buscar_exame_terceirizado'),
     path('imprimir/etiqueta/<int:pk>/', views.etiqueta_exame, name='etiqueta_exame'),
     #grupo
     path('add/grupo/', views.GrupoCreate.as_view(), name='add_grupo'),
+    path('data/grupo/<str:data>/', views.ExamesGrupoData.as_view(), name='grupo_data'),
 ]

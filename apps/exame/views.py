@@ -1,6 +1,7 @@
 import json
 import textwrap
 from io import BytesIO
+from urllib.parse import unquote
 
 import requests
 import zpl
@@ -99,7 +100,50 @@ class ExamesListaData(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         data = self.kwargs['data']
+        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False)
+
+
+class ExamesGrupoData(LoginRequiredMixin, ListView):
+    model = Exame
+    template_name = 'exame/exames_grupo_data.html'
+    context_object_name = 'exames'
+
+    def get_queryset(self):
+        data = self.kwargs['data']
         return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False, terceirizado=False)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        exames = self.get_queryset()
+        grupos = GrupoExame.objects.all()
+
+        grupos_exames = {}  # Dicionário para armazenar {grupo: ids_dos_exames}
+
+        for grupo in grupos:
+            exames_do_grupo = grupo.exames.all()
+            exames_ids = [exame.id for exame in exames if exame.nome in exames_do_grupo.values_list('nome', flat=True)]
+
+            if exames_ids:
+                grupos_exames[grupo.nome] = exames_ids  # Apenas os IDs dos exames
+
+        exames_sem_grupo = []
+        for exame in exames:
+            # Verifica se o nome do exame não pertence a nenhum grupo
+            pertence_a_grupo = False
+            for grupo in grupos:
+                exames_do_grupo = grupo.exames.all()
+                if exame.nome in exames_do_grupo.values_list('nome', flat=True):
+                    pertence_a_grupo = True
+                    break
+            if not pertence_a_grupo:
+                exames_sem_grupo.append(exame.id)
+
+        # Adiciona os exames sem grupo ao dicionário
+        if exames_sem_grupo:
+            grupos_exames['Sem Grupo'] = exames_sem_grupo
+
+        contexto['grupos'] = grupos_exames  # Passa apenas os IDs para o template
+        return contexto
 
 
 class ExamesListaTerceirizado(LoginRequiredMixin, ListView):
@@ -1183,6 +1227,228 @@ def preencher_laudo_medico(request, pk):
     return response
 
 
+def preencher_laudo(request):
+    exames_ids = request.GET.get('exames', '')
+    grupo_id = request.GET.get('grupo', '')
+    grupo_id = unquote(grupo_id)
+    exames_ids_lista = [int(id) for id in exames_ids.split(',') if id.isdigit()]
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{grupo_id}.pdf"'
+
+    c = canvas.Canvas(response, pagesize=A4)
+    ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
+
+    base = 27 * 28.35
+    observacao = base
+    print(f'Observação Init: {observacao}')
+    for id in exames_ids_lista:
+        exame = get_object_or_404(Exame, pk=id)
+        atendimento = exame.r_exame.first()
+        #observacao = observacao - 20
+        altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=(base - (observacao - 20)))
+        escrever_texto(c, texto=f'{atendimento.paciente} - {exame} - N° {exame.codigo}',
+                       font="Helvetica-Bold",
+                       x=ponto1[0] + 5,
+                       y=(altura1 + 5), font_size=10,
+                       color=(0, 0.5, 0))
+
+        data_referencia = None
+        data_referencia_fator = None
+        data_referencia_esperado = None
+        referencias = exame.referencias.all()
+        for ref in referencias:
+            if ref.fator is False and ref.esperado is False:
+                data_referencia = [
+                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
+                ]
+            elif ref.fator is True and ref.esperado is False:
+                data_referencia_fator = [
+                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
+                ]
+            elif ref.fator is False and ref.esperado is True:
+                data_referencia_esperado = [
+                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
+                ]
+
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
+            ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinhamento central para todas as células
+            ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),  # Bordas da tabela
+        ])
+
+        largura_disponivel, _ = A4
+
+        for referencia in referencias:
+            if referencia.fator is False and referencia.esperado is False:
+                ref = [referencia.nome_referencia, referencia.valor_obtido,
+                       f'{referencia.limite_inferior} a {referencia.limite_superior}']
+                data_referencia.append(ref)
+            elif referencia.fator is True and referencia.esperado is False:
+                fator_ref = referencia.fatores.all()
+                fator_nome1 = ''
+                fator10 = ''
+                fator100 = ''
+                for fator in fator_ref:
+                    if fator.nome_fator is None:
+                        fator_nome1 = f'{fator.idade}'
+                    else:
+                        fator_nome1 = f'{fator.nome_fator}'
+
+                    fator10 = fator10 + f' {fator_nome1} || '
+                    fator100 = fator100 + f'{fator.limite_inferior} a {fator.limite_superior}  || '
+
+                fator100 = fator100[:-3]
+                fator10 = fator10[:-3]
+
+                linhas1 = textwrap.wrap(fator10, width=50)
+                for linha in linhas1:
+                    fator0 = ['', '', f'{linha}']
+                    data_referencia_fator.append(fator0)
+
+                linhas10 = textwrap.wrap(fator100, width=50)
+
+                numero_linha = 1
+                for linha in linhas10:
+                    if numero_linha == 1:
+                        fator1 = [referencia.nome_referencia, referencia.valor_obtido, f'{linha}']
+                    else:
+                        fator1 = ['', '', f'{linha}']
+
+                    data_referencia_fator.append(fator1)
+                    numero_linha += 1
+
+                esperado1 = ['', '', '']
+                data_referencia_fator.append(esperado1)
+
+            elif referencia.fator is False and referencia.esperado is True:
+                ref_esperado = referencia.padrao.all()
+                numero_1 = 1
+                esperado1 = ''
+                for esperado in ref_esperado:
+                    if numero_1 == 1:
+                        esperado1 = [referencia.nome_referencia, referencia.valor_obtido,
+                                     f'{esperado.tipo_valor}: {esperado.valor_esperado}']
+                    else:
+                        esperado1 = ['', '',
+                                     f'{esperado.tipo_valor}: {esperado.valor_esperado}']
+                    data_referencia_esperado.append(esperado1)
+                    numero_1 += 1
+                if numero_1 > 2:
+                    esperado1 = ['', '', '']
+                    data_referencia_esperado.append(esperado1)
+            else:
+                fator_ref = referencia.fatores.all()
+
+
+        tabela_referencia_altura = 0
+
+        if data_referencia != None:
+            print(f'Observação1: {observacao}')
+            if observacao - (len(data_referencia) * 20) <= 5:
+                c.showPage()
+                observacao = 27 * 28.35
+                ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
+                larguras_colunas = [212, 100, 225]
+                t = Table(data_referencia, colWidths=larguras_colunas)
+                largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+                t.setStyle(style)
+                largura_tabela = sum(t._argW)
+                posicao_horizontal_tabela = ponto1[0] + (((19 * 28.35) - largura_tabela) / 2)
+                tabela_referencia_altura = altura_tabela
+                posicao_vertical_tabela = observacao - tabela_referencia_altura
+                t.wrapOn(c, largura_tabela, 100)
+                t.drawOn(c, posicao_horizontal_tabela, posicao_vertical_tabela)
+                observacao = observacao - tabela_referencia_altura
+            else:
+                larguras_colunas = [212, 100, 225]
+                t = Table(data_referencia, colWidths=larguras_colunas)
+                largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
+                t.setStyle(style)
+                largura_tabela = sum(t._argW)
+                posicao_horizontal_tabela = ponto1[0] + (((19 * 28.35) - largura_tabela) / 2)
+                tabela_referencia_altura = altura_tabela
+                posicao_vertical_tabela = observacao - tabela_referencia_altura
+                t.wrapOn(c, largura_tabela, 100)
+                t.drawOn(c, posicao_horizontal_tabela, posicao_vertical_tabela)
+                observacao = observacao - tabela_referencia_altura
+
+        tabela_referencia_altura_ref = 0
+
+        if data_referencia_fator != None:
+            if observacao - (len(data_referencia_fator) * 20) <= 5:
+                c.showPage()
+                observacao = 27 * 28.35
+                ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
+                larguras_colunas_ref = [212, 100, 225]  # total 537
+                tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
+                largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
+                tr.setStyle(style)
+                largura_tabela_ref = sum(tr._argW)
+                posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
+                tabela_referencia_altura_ref = altura_tabela_ref
+                posicao_vertical_tabela_ref = observacao - tabela_referencia_altura_ref
+                tr.wrapOn(c, largura_tabela_ref, 100)
+                tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
+                observacao = observacao - tabela_referencia_altura_ref
+
+            else:
+                larguras_colunas_ref = [212, 100, 225]  # total 537
+                tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
+                largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
+                tr.setStyle(style)
+                largura_tabela_ref = sum(tr._argW)
+                posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
+                tabela_referencia_altura_ref = altura_tabela_ref
+                posicao_vertical_tabela_ref = observacao - tabela_referencia_altura_ref
+                tr.wrapOn(c, largura_tabela_ref, 100)
+                tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
+                observacao = observacao - tabela_referencia_altura_ref
+
+        tabela_referencia_altura_esp = 0
+        if data_referencia_esperado != None:
+            if observacao - (len(data_referencia_esperado) * 20) <= 5:
+                c.showPage()
+                observacao = 27 * 28.35
+                ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
+                larguras_colunas_esperado = [212, 100, 225]  # total 537
+                te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
+                largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
+                te.setStyle(style)
+                largura_tabela_esp = sum(te._argW)
+                posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
+                tabela_referencia_altura_esp = altura_tabela_esp
+                posicao_vertical_tabela_esp = observacao - tabela_referencia_altura_esp
+                te.wrapOn(c, largura_tabela_esp, 100)
+                te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
+                observacao = observacao - tabela_referencia_altura_esp
+            else:
+                larguras_colunas_esperado = [212, 100, 225]  # total 537
+                te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
+                largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
+                te.setStyle(style)
+                largura_tabela_esp = sum(te._argW)
+                posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
+                tabela_referencia_altura_esp = altura_tabela_esp
+                posicao_vertical_tabela_esp = observacao - tabela_referencia_altura_esp
+                te.wrapOn(c, largura_tabela_esp, 100)
+                te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
+                observacao = observacao - tabela_referencia_altura_esp
+
+        observacao = observacao - 40
+
+    c.save()
+
+    return response
+
+
+def preencher_laudo1(request):
+    exames_ids = request.GET.get('exames', '')
+    print(f"IDs: {exames_ids}")
+    return HttpResponse('<h1>Saiu</h1>')
+
+
 # def criar_laudo_medico1(request, pk):
 #     exame = get_object_or_404(Exame, pk=pk)
 #     atendimento = OrcamentoExames.objects.filter(exame=exame).first()
@@ -1590,11 +1856,39 @@ class BuscarExame(LoginRequiredMixin, TemplateView):
     template_name = 'exame/buscar_exame1.html'
 
 
+class BuscarExameterceirizado(LoginRequiredMixin, TemplateView):
+    template_name = 'exame/buscar_exame_terceirizado.html'
+
+
 def buscar_exame(request):
     if request.POST.get('ajax_request') == 'true':
         res = None
         nomes = request.POST.get('nomes')
-        query_se = Exame.objects.filter(codigo__icontains=nomes)
+        query_se = Exame.objects.filter(codigo__icontains=nomes, terceirizado=False)
+
+        if len(query_se) > 0 and len(nomes) > 0:
+            data = []
+            for exame in query_se:
+                item = {
+                    'pk': exame.pk,
+                    'codigo': exame.codigo,
+                    'nome': exame.nome,
+                }
+
+                data.append(item)
+            res = data
+        else:
+            res = 'Nenhum exame encontrado'
+
+        return JsonResponse({'data': res})
+    return JsonResponse({})
+
+
+def buscar_exame_terceirizado(request):
+    if request.POST.get('ajax_request') == 'true':
+        res = None
+        nomes = request.POST.get('nomes')
+        query_se = Exame.objects.filter(codigo__icontains=nomes, terceirizado=True)
 
         if len(query_se) > 0 and len(nomes) > 0:
             data = []
@@ -1623,24 +1917,24 @@ def etiqueta_exame(request, pk):
     response['Content-Disposition'] = f'attachment; filename="etiqueta_{orcamento.paciente.nome}.pdf"'
 # Criando o PDF
     c = canvas.Canvas(response, pagesize=etiqueta_tamanho)
-    c.setFont("Helvetica-Bold", 9)
+    c.setFont("Helvetica-Bold", 11)
     largura_etiqueta, altura_etiqueta = etiqueta_tamanho
 
     altura_inicio = altura_etiqueta - 25
     palavra = f'{orcamento.paciente.nome}'
     exame_nome = f'{exame.nome}'
 
-    largura_nome = c.stringWidth(palavra[:50], "Helvetica-Bold", 9)
+    largura_nome = c.stringWidth(palavra[:50], "Helvetica-Bold", 11)
     x = (largura_etiqueta - largura_nome) / 2
     c.drawString(x, altura_inicio, palavra[:50])
     altura_inicio -= 15
-    c.setFont("Helvetica", 9)
-    largura_exame = c.stringWidth(exame_nome[:46], "Helvetica", 9)
+    c.setFont("Helvetica", 11)
+    largura_exame = c.stringWidth(exame_nome[:46], "Helvetica", 11)
     x = (largura_etiqueta - largura_exame) / 2
     c.drawString(x, altura_inicio, exame_nome[:46])
     altura_inicio -= 13
-    c.setFont("Helvetica", 7)
-    largura_codigo = c.stringWidth(f'{exame.codigo}', "Helvetica", 7)
+    c.setFont("Helvetica", 9)
+    largura_codigo = c.stringWidth(f'{exame.codigo}', "Helvetica", 9)
     x = (largura_etiqueta - largura_codigo) / 2
     c.drawString(x, altura_inicio, f'{exame.codigo}')
     altura_inicio -= 10

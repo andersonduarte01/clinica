@@ -1,0 +1,53 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Exames Agrupados
+{% endblock %}
+{% block trilha %}
+<h4 class="h4 mb-0 text-success font-weight-bold text-uppercase">Relatório de exames por grupo</h4>
+{% endblock %}
+
+{% block estilo %}
+{{block.super}}
+ <style>
+    a.text-secondary:hover {
+      color: #28a745 !important;
+    }
+  </style>
+{% endblock %}
+{% block conteudo %}
+<div class="row mb-3">
+    <!-- teste -->
+    <div class="col-md-12">
+    <div class="card mb-4">
+        <div class="card-body">
+<div class="row">
+    {% for grupo, exames_do_grupo in grupos.items %}
+        {% with exames_ids=exames_do_grupo|join:"," %}
+            <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                <a href="{% url 'exame:laudo_pdf' %}?exames={{ exames_ids }}&grupo={{grupo | urlencode}}"
+                   class="text-decoration-none text-secondary font-weight-bold">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{grupo}}
+                            <span class="badge badge-success badge-pill">
+                                <i class="bi bi-clipboard-check"></i>
+                            </span>
+                        </li>
+                    </ul>
+                </a>
+            </div>
+        {% endwith %}
+
+    {% empty %}
+        <p>Nenhum exame encontrado.</p>
+    {% endfor %}
+</div>
+
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+

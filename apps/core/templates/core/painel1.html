@@ -102,6 +102,51 @@ Gen's | Painel Administrativo
                     </ul>
                   </a>
                 </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                 <a href="{% url 'exame:pesquisar_exame_terceirizado' %}" class="text-decoration-none text-secondary font-weight-bold">
+                     <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Pesquisar Exame Terceirizado</span>
+                                <div class="mt-2 mb-0 text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">Pesquisar pelo número do exame</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill"><i class="bi bi-search"></i></span>
+                        </li>
+                    </ul>
+                 </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'exame:grupo_data' data=data %}" class="text-decoration-none text-secondary font-weight-bold">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Grupos Exames</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">{{data}}</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{qtd_exames_realizados}}</span>
+                        </li>
+                    </ul>
+                  </a>
+                </div>
+                <div class="col-xl-4 col-md-6 mb-4 mt-3">
+                  <a href="{% url 'exame:exame_list_data' data=data %}" class="text-decoration-none text-secondary font-weight-bold">
+                    <ul class="list-group custom-list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="custom-title font-weight-bold">Exames (Aguardando)</span>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                     <span class="text-secondary mr-2 font-weight-light font-italic">{{data}}</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-success badge-pill">{{qtd_exames}}</span>
+                        </li>
+                    </ul>
+                  </a>
+                </div>
                 {% endif %}
                 {% if user.is_authenticated and user.usuario.paciente or user.usuario.adm %}
                 <div class="col-xl-4 col-md-6 mb-4 mt-3">
