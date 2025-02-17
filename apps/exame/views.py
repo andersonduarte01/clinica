@@ -103,6 +103,22 @@ class ExamesListaData(LoginRequiredMixin, ListView):
         return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False)
 
 
+class ExamesEtiquetas(LoginRequiredMixin, ListView):
+    model = Exame
+    template_name = 'exame/exames_etiquetas.html'
+    context_object_name = 'exames'
+
+    def get_queryset(self):
+        data = self.kwargs['data']
+        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto['data'] = self.kwargs['data']
+        return contexto
+
+
+
 class ExamesGrupoData(LoginRequiredMixin, ListView):
     model = Exame
     template_name = 'exame/exames_grupo_data.html'
@@ -1443,12 +1459,6 @@ def preencher_laudo(request):
     return response
 
 
-def preencher_laudo1(request):
-    exames_ids = request.GET.get('exames', '')
-    print(f"IDs: {exames_ids}")
-    return HttpResponse('<h1>Saiu</h1>')
-
-
 # def criar_laudo_medico1(request, pk):
 #     exame = get_object_or_404(Exame, pk=pk)
 #     atendimento = OrcamentoExames.objects.filter(exame=exame).first()
@@ -1938,6 +1948,48 @@ def etiqueta_exame(request, pk):
     x = (largura_etiqueta - largura_codigo) / 2
     c.drawString(x, altura_inicio, f'{exame.codigo}')
     altura_inicio -= 10
+    c.save()
+    return response
+
+
+def etiquetas_de_exame(request):
+    exames_ids = request.GET.get('exames', '')
+    exames_ids_lista = [int(id) for id in exames_ids.split(',') if id.isdigit()]
+    exame = get_object_or_404(Exame, pk=exames_ids_lista[0])
+    orcamento = OrcamentoExames.objects.filter(exame=exame).first()
+
+    print(f'lista:{exames_ids_lista}')
+
+    etiqueta_tamanho = (283, 150)  # 100 mm x 50 mm
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="etiqueta_{orcamento.paciente.nome}.pdf"'
+
+    c = canvas.Canvas(response, pagesize=etiqueta_tamanho)
+    c.setFont("Helvetica-Bold", 11)
+    largura_etiqueta, altura_etiqueta = etiqueta_tamanho
+
+    altura_inicio = altura_etiqueta - 25
+    palavra = f'{orcamento.paciente.nome}'
+    largura_nome = c.stringWidth(palavra[:50], "Helvetica-Bold", 11)
+    x = (largura_etiqueta - largura_nome) / 2
+    c.drawString(x, altura_inicio, palavra[:50])
+    altura_inicio -= 15
+
+
+    for id in exames_ids_lista:
+        exame = get_object_or_404(Exame, pk=id)
+        exame_nome = f'{exame.nome}'
+        c.setFont("Helvetica", 11)
+        largura_exame = c.stringWidth(exame_nome[:46], "Helvetica", 11)
+        x = (largura_etiqueta - largura_exame) / 2
+        c.drawString(x, altura_inicio, exame_nome[:46])
+        altura_inicio -= 13
+        c.setFont("Helvetica", 9)
+        largura_codigo = c.stringWidth(f'{exame.codigo}', "Helvetica", 9)
+        x = (largura_etiqueta - largura_codigo) / 2
+        c.drawString(x, altura_inicio, f'{exame.codigo}')
+        altura_inicio -= 10
+
     c.save()
     return response
 

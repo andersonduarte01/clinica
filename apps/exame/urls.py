@@ -12,6 +12,7 @@ urlpatterns = [
     path('atendimento/<int:pk>/deletar/', views.ExameAtendimentoDel.as_view(), name='exame_atendimento_del'),
     path('lista/', views.ExamesLista.as_view(), name='exame_list'),
     path('<str:data>/lista/', views.ExamesListaData.as_view(), name='exame_list_data'),
+    path('<str:data>/etiquetas/', views.ExamesEtiquetas.as_view(), name='exame_etiquetas'),
     path('aguardando/terceirizados/lista/', views.ExamesListaTerceirizado.as_view(), name='exame_list_terceirizado'),
     path('realizados/<str:data>/', views.ExamesListaDataRealizados.as_view(), name='exame_realizados_data'),
     path('<int:pk>/informacoes/', views.ExameDetalhes.as_view(), name='exame_detail'),
@@ -39,6 +40,7 @@ urlpatterns = [
     path('buscar/exame/', views.buscar_exame, name='buscar_exame'),
     path('terceirizado/buscar/exame/', views.buscar_exame_terceirizado, name='buscar_exame_terceirizado'),
     path('imprimir/etiqueta/<int:pk>/', views.etiqueta_exame, name='etiqueta_exame'),
+    path('etiquetas/impressas', views.etiquetas_de_exame, name='etiquetas'),
     #grupo
     path('add/grupo/', views.GrupoCreate.as_view(), name='add_grupo'),
     path('data/grupo/<str:data>/', views.ExamesGrupoData.as_view(), name='grupo_data'),

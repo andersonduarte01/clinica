@@ -323,6 +323,19 @@ class AtendimentoView1(LoginRequiredMixin, TemplateView):
         return contexto
 
 
+class EtiquetasView1(LoginRequiredMixin, TemplateView):
+    template_name = 'atendimento/ver_etiquetas.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        paciente = Usuario.objects.get(pk=self.kwargs['pk'])
+        orcamento = get_object_or_404(OrcamentoExames, paciente=paciente, data_cadastro=self.kwargs['data'])
+        exame_realizado = OrcamentoExames.algum_exame_realizado(orcamento)
+        contexto['orcamento'] = orcamento
+        contexto['exame_realizado'] = exame_realizado
+        return contexto
+
+
 class RelatorioDiario(LoginRequiredMixin, ListView):
     model = OrcamentoExames
     template_name = 'atendimento/diario.html'

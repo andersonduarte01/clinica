@@ -1,0 +1,113 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Etiquetas
+{% endblock %}
+{% block estilo %}
+{{ block.super }}
+<style>
+    .form-control:focus {
+        color: #000;
+        background-color: #ffffff;
+        border-color: #4cb061;
+        outline: 0
+    }
+
+    .blockquote-footer::before {
+        content: ""
+    }
+
+    .info-paciente {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-md-12">
+        <div id="precos-selecionados"></div>
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h4 mb-0 font-weight-bold text-uppercase text-success text-center" style="margin-top: 8px;">Emitir Etiquetas</h5>
+                </div>
+                <hr>
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h6 class="h6 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">{{orcamento.paciente}}</h6>
+                </div>
+                <hr>
+                <div class="row">
+                    <div id="formato-cpf" class="h6 mb-0 col-6 col-md-6 info-paciente"></div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">USUARIO:
+                        {% if paciente.usuario %}{{paciente.usuario}}{% else %}Não cadastrado{% endif %}
+                    </div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
+                    <div class="h6 mb-0 col-6 col-md-6 info-paciente">SEXO: {{orcamento.paciente.sexo}}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <hr>
+                <div class="row">
+                    {% for exame in orcamento.exame.all %}
+                    <div class="col-md-4 ">
+                        <div class="card exame-card" style="margin-bottom:10px; margin-top: 10px;">
+                            <div class="card-body" style="margin-top:-15px;">
+                                <div class="text-success text-uppercase font-weight-bold">
+                                    <i class="bi bi-check2-circle"></i> {{ exame.nome }}
+                                </div>
+                                <footer>
+                                    <div class="text-dark">
+                                        <small><i class="bi bi-asterisk"></i> {{exame.codigo}}</small>
+                                    </div>
+                                </footer>
+                                <!-- Adicionando checkbox para cada exame -->
+                                <div class="form-group">
+                                    <input type="checkbox" name="exames_selecionados" value="{{ exame.pk }}" class="form-check-input" id="exame-{{ exame.pk }}">
+                                    <label class="form-check-label" for="exame-{{ exame.pk }}">Selecionar para Etiqueta</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>VAZIO...</p>
+                    {% endfor %}
+                </div>
+                <hr>
+                <!-- Gerar link com os ids dos exames selecionados -->
+                <div class="row">
+                    <a href="#" id="gerarEtiquetasLink" class="btn btn-success btn-block">Gerar Etiquetas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+
+    // Função para gerar o link com os exames selecionados
+    document.getElementById("gerarEtiquetasLink").addEventListener("click", function() {
+        var examesSelecionados = [];
+
+        // Pega os exames marcados
+        var checkboxes = document.querySelectorAll('input[name="exames_selecionados"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            examesSelecionados.push(checkbox.value);
+        });
+
+        // Verifica se algum exame foi selecionado
+        if (examesSelecionados.length > 0) {
+            var examesIds = examesSelecionados.join(','); // Cria uma string com os IDs separados por vírgula
+            var url = "{% url 'exame:etiquetas' %}?exames=" + examesIds;
+            window.location.href = url; // Redireciona para a URL com os exames selecionados
+        } else {
+            alert("Selecione ao menos um exame.");
+        }
+    });
+</script>
+{% endblock %}

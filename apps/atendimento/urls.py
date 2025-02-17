@@ -16,6 +16,7 @@ urlpatterns = [
     path('buscar/atendimento', views.buscar_atendimento, name='buscar_atendimento'),
     path('visualizar/<int:pk>/atendimento/', views.AtendimentoView.as_view(), name='ver_atendimento'),
     path('<int:pk>/<str:data>/visualizar/', views.AtendimentoView1.as_view(), name='ver_atendimento1'),
+    path('etiquetas/<int:pk>/<str:data>/', views.EtiquetasView1.as_view(), name='ver_etiqueta'),
     path('relatorio/diario/', views.RelatorioDiario.as_view(), name='relatorio_diario'),
     path('relatorio/semanal/', views.RelatorioDSemanal.as_view(), name='relatorio_semanal'),
     path('relatorio/periodo/', views.RelatorioPeriodo.as_view(), name='relatorio_periodo'),
