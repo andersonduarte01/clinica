@@ -1,0 +1,282 @@
+{% extends 'padrao/painel.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block titulo %}
+Gen's | Realizar Exame
+{% endblock %}
+{% block estilo %}
+{{block.super}}
+<style>
+    .form-control:focus {
+    color: #000;
+    background-color: #ffffff;
+    border-color: #4cb061;
+    outline: 0
+}
+</style>
+{% endblock %}
+{% block trilha %}
+{% endblock %}
+{% block conteudo %}
+<div class="row">
+    <div class="col col-mb-12">
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: -20px;">
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h4 class="h4 mb-0 font-weight-bold text-uppercase text-success text-left" style="margin-top: 8px;">{{orcamento.paciente}}</h4>
+                    <h4 class="h4 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">{{orcamento.data_cadastro|date:"d/m/Y"}}</h4>
+                </div>
+                <hr>
+                <div class="row">
+                    <div id="formato-cpf" class="h6 mt-1 col-6 col-md-6 info-paciente" ></div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente text-uppercase" id="idade-paciente"></div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">RG: {{orcamento.paciente.rg}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">TELEFONE: {{orcamento.paciente.telefone}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">DATA NASC: {{orcamento.paciente.data_nascimento}}</div>
+                    <div class="h6 mt-1 col-6 col-md-6 info-paciente">SEXO: {{orcamento.paciente.sexo}}</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <hr>
+                <div class="row justify-content-between ml-1 mr-2">
+                    <h5 class="h5 mb-0 font-weight-bold text-uppercase text-success text-left"
+                        style="margin-top: 8px;">{{exame}} {% if exame.status_exame == 'REALIZADO' %}<span class="text-danger">(Realizado)</span>{% endif %}
+                    </h5>
+                    <h5 class="h5 mb-0 mt-2 font-weight-bold text-uppercase text-success text-right">
+                        Nº: {{exame.codigo}}
+                    </h5>
+                </div>
+                <hr>
+                <div style="overflow-x: auto; width: 100%;">
+                    <div class="table-responsive">
+                        <table class="table table-flush table-hover">
+                            <thead class="bg-success">
+                            <tr class="text-uppercase text-white small">
+                                <th class="text-center align-middle">Referência</th>
+                                <th class="text-center align-middle">Limites</th>
+                                <th class="text-center align-middle">Valor Obtido</th>
+                                <th class="text-center align-middle">Ref. Valor</th>
+                                <th class="text-center align-middle">Obtido</th>
+                                <th class="text-center align-middle">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for referencia in referencias %}
+                            <!-- Preenchendo a coluna "Referência" -->
+                            <td class="text-center align-middle small text-success font-weight-bold">
+                                <div id="referencia{{ referencia.id }}" class="referencia-bloco">
+                                {{ referencia.nome_referencia|default_if_none:"" }}
+                                </div>
+                            </td>
+
+                            <!-- Preenchendo a coluna "Limites" -->
+                            <td class="text-center align-middle small text-lowercase">
+                                {% if not referencia.fator and not referencia.esperado %}
+                                {{ referencia.limite_inferior|default_if_none:"" }} a {{ referencia.limite_superior|default_if_none:"" }}
+                                {% elif referencia.fator %}
+                                {% if referencia.fatores.all %}
+                                {% for fator in referencia.fatores.all %}
+                                {{ fator.nome_fator }}: {{ fator.limite_inferior }} a {{ fator.limite_superior }}<br>
+                                {% endfor %}
+                                {% endif %}
+                                {% endif %}
+                            </td>
+
+                            <!-- Preenchendo a coluna "Valor Obtido" -->
+                            <td class="text-center align-middle small text-danger font-weight-bold">
+                                {{referencia.valor_obtido|default_if_none:""}}
+                            </td>
+
+                            <!-- Preenchendo a coluna "Valor Esperado" com os valores em linhas separadas -->
+                            {% if referencia.esperado %}
+                            {% if referencia.padrao.all %}
+                            <td class="text-center align-middle small text-lowercase">
+                                {% for esperado in referencia.padrao.all %}
+                                {% if forloop.first %}
+                                <div>{{ esperado.tipo_valor }}: {{ esperado.valor_esperado }}</div>
+                                {% else %}
+                                <hr><div>{{ esperado.tipo_valor }}: {{ esperado.valor_esperado }}</div>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% endif %}
+                            {% else %}
+                            <td class="text-center align-middle small text-lowercase">*</td>
+                            {% endif %}
+
+                            {% if referencia.esperado %}
+                            {% if referencia.padrao.all %}
+                            <td class="text-center align-middle small text-lowercase text-danger font-weight-bold">
+                                {% for esperado in referencia.padrao.all %}
+                                {% if forloop.first %}
+                                <div>{{ esperado.esperado_obtido|default:"" }}</div>
+                                {% else %}
+                                <hr><div>{{ esperado.esperado_obtido|default:"" }}</div>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% endif %}
+                            {% else %}
+                            <td class="text-center align-middle small text-lowercase">*</td>
+                            {% endif %}
+                            <td class="text-center align-middle">
+                                <button class="btn btn-sm btn-outline-success" data-toggle="modal" data-target="#modalReferencia{{ referencia.id }}">
+                                    Editar
+                                </button>
+
+                                <!-- Modal de Edição -->
+                                <div class="modal fade" id="modalReferencia{{ referencia.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ referencia.id }}" aria-hidden="true">
+                                    <div class="modal-dialog " role="document">
+                                        <div class="modal-content">
+                                            <form method="post" action="{% url 'exame:salvar_referencia' referencia.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header bg-success">
+                                                    <h5 class="modal-title text-white" id="modalLabel{{ referencia.id }}">{{ referencia.nome_referencia }}</h5>
+                                                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body text-left">
+                                                    {% if not referencia.fator and not referencia.esperado %}
+                                                    <div class="mb-3 mt-2">
+                                                        <label class="form-label">
+                                                            {{ referencia.nome_referencia }}: {{ referencia.limite_inferior }} a {{ referencia.limite_superior }}
+                                                        </label>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <input placeholder="Valor Obtido" type="text" name="valor_obtido" id="valor_obtido_{{ referencia.id }}" class="form-control" value="{{ referencia.valor_obtido|default_if_none:'' }}">
+                                                    </div>
+                                                    {% endif %}
+
+                                                    {% if referencia.padrao.all %}
+                                                    {% for esperado in referencia.padrao.all %}
+                                                    <div class="mb-3">
+                                                        <label class="form-label">{{ esperado.tipo_valor }}: {{ esperado.valor_esperado }}</label>
+                                                        <input type="text" name="esperado_{{ esperado.id }}" class="form-control" value="{{ esperado.esperado_obtido|default_if_none:'' }}">
+                                                    </div>
+                                                    {% endfor %}
+                                                    {% endif %}
+
+                                                    {% if referencia.fatores.all %}
+                                                        {% for fator in referencia.fatores.all %}
+                                                        <div class="mb-3 mt-2">
+                                                            <label class="form-label">
+                                                                {{ fator.nome_fator }}: {{ fator.limite_inferior }} a {{ fator.limite_superior }}
+                                                            </label>
+                                                        </div>
+                                                        {% endfor %}
+
+                                                        <!-- Campo para editar o valor_obtido da ReferenciaExame -->
+                                                        <div class="mb-3">
+                                                            <input placeholder="Valor Obtido" type="text" name="valor_obtido" class="form-control" value="{{ referencia.valor_obtido|default_if_none:'' }}">
+                                                        </div>
+                                                    {% endif %}
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-success">Salvar</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                                </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Nenhuma referência cadastrada.</td>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <hr>
+                <form method="post" action="{% url 'exame:finalizar_exame' exame.id %}" class="mt-4">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="comentario" class="form-label text-success font-weight-bold text-uppercase">Observações</label>
+                        <textarea name="comentario" id="comentario" class="form-control" rows="5">{{ exame.comentario|default_if_none:'' }}</textarea>
+                    </div>
+                    <hr>
+                    <button type="submit" class="btn btn-danger btn-block">
+                        Finalizar Exame
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const hash = window.location.hash;
+        if (hash) {
+            const target = document.querySelector(hash);
+            if (target) {
+                // Adiciona destaque temporário
+                target.style.transition = "background-color 0.8s ease";
+                target.style.backgroundColor = "#ffffcc";
+
+                // Scroll forçado com delay
+                setTimeout(() => {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+
+                // Remove destaque depois de alguns segundos
+                setTimeout(() => {
+                    target.style.backgroundColor = "";
+                }, 2500);
+            } else {
+                console.warn("Elemento não encontrado para âncora:", hash);
+            }
+        }
+    });
+    // Função para formatar CPF
+    function formatarCPF(cpf) {
+        cpf = cpf.replace(/[.-]/g, '');
+        return cpf.slice(0, 3) + '.' + cpf.slice(3, 6) + '.' + cpf.slice(6, 9) + '-' + cpf.slice(9);
+    }
+
+    // Função para calcular a idade do paciente
+    function calcularIdade(dataNascimentoString) {
+        var partesData = dataNascimentoString.split('/');
+        var dataNascimento = new Date(Date.UTC(partesData[2], partesData[1] - 1, partesData[0]));
+        var hoje = new Date();
+        var idade = hoje.getUTCFullYear() - dataNascimento.getUTCFullYear();
+        var mes = hoje.getUTCMonth() - dataNascimento.getUTCMonth();
+        if (mes < 0 || (mes === 0 && hoje.getUTCDate() < dataNascimento.getUTCDate())) {
+            idade--;
+        }
+        return idade;
+    }
+
+    // Função para verificar e habilitar o botão "Finalizar" com base no status do exame
+    function verificarStatusExame() {
+        var statusExame = document.getElementById("id_status_exame").value;
+        if (statusExame === "REALIZADO") {
+            document.getElementById("btn-finalizar").disabled = false;
+        } else {
+            document.getElementById("btn-finalizar").disabled = true;
+        }
+    }
+
+    // Chamadas de função quando a página carrega e sempre que o status do exame mudar
+    window.onload = function () {
+        var cpf = "{{orcamento.paciente.cpf}}";
+        var cpfFormatado = (cpf == 'None') ? "Não cadastrado" : formatarCPF(cpf);
+        document.getElementById("formato-cpf").innerText = "CPF: " + cpfFormatado;
+
+        var dataNascimentoString = "{{orcamento.paciente.data_nascimento}}";
+        var idade = calcularIdade(dataNascimentoString);
+        document.getElementById("idade-paciente").innerText = "Idade: " + idade + " anos";
+
+        verificarStatusExame();
+    };
+
+    document.getElementById("id_status_exame").addEventListener("change", verificarStatusExame);
+</script>
+{% endblock %}

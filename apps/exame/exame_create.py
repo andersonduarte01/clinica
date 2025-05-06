@@ -66,7 +66,8 @@ def objeto_exame(pk, sequencia):
                 valor_esperado_copia = ValorEsperado.objects.create(
                     referencia=referencia_exame_copia,
                     tipo_valor=valor_esperado1.tipo_valor,
-                    valor_esperado=valor_esperado1.valor_esperado
+                    valor_esperado=valor_esperado1.valor_esperado,
+                    esperado_obtido=valor_esperado1.esperado_obtido
                 )
         elif ref_padrao.fator is True and ref_padrao.esperado is False:
             referencia_exame_copia = ReferenciaExame.objects.create(
@@ -103,7 +104,8 @@ def objeto_exame(pk, sequencia):
                 valor_esperado_copia = ValorEsperado.objects.create(
                     referencia=referencia_exame_copia,
                     tipo_valor=valor_esperado1.tipo_valor,
-                    valor_esperado=valor_esperado1.valor_esperado
+                    valor_esperado=valor_esperado1.valor_esperado,
+                    esperado_obtido = valor_esperado1.esperado_obtido
                 )
 
     return exame_copia

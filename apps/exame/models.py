@@ -70,12 +70,14 @@ class FatoresReferencia(models.Model):
     idade = models.CharField(verbose_name='Idade', max_length=50, null=True, blank=True)
     limite_inferior = models.CharField(verbose_name='Limite Inferior', max_length=80, null=True, blank=True)
     limite_superior = models.CharField(verbose_name='Limite Superior', max_length=80, null=True, blank=True)
+    fator_obtido = models.CharField(verbose_name='Fator obtido', max_length=80, null=True, blank=True)
 
 
 class ValorEsperado(models.Model):
     referencia = models.ForeignKey(ReferenciaExame, on_delete=models.CASCADE, related_name='padrao')
     tipo_valor = models.CharField(verbose_name='Nome', max_length=120)
     valor_esperado = models.CharField(verbose_name='Padrão', max_length=120)
+    esperado_obtido = models.CharField(verbose_name='Valor obtido', max_length=80, null=True, blank=True)
 
 
 class GrupoExame(models.Model):

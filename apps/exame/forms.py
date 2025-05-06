@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import TextInput
+from django.forms import TextInput, inlineformset_factory
 from ..exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado, GrupoExame
 from .validacao import validate_pdf_extension
 
@@ -84,9 +84,27 @@ class ExameMedicTerceirizado(forms.ModelForm):
 class ReferenciaExameForm(forms.ModelForm):
     class Meta:
         model = ReferenciaExame
-        fields = ['valor_obtido', ]
+        fields = ['valor_obtido']
         widgets = {
             'valor_obtido': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class EsperadorExameForm(forms.ModelForm):
+    class Meta:
+        model = ValorEsperado
+        fields = ['esperado_obtido']
+        widgets = {
+            'esperado_obtido': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class FatorExameForm(forms.ModelForm):
+    class Meta:
+        model = FatoresReferencia
+        fields = ['fator_obtido']
+        widgets = {
+            'fator_obtido': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 
@@ -100,3 +118,4 @@ class GrupoExamesForm(forms.ModelForm):
             exames_filtrados = Exame.objects.filter(padrao=True)
             print("Exames filtrados:", exames_filtrados)  # Verificar se há exames com padrao=True
             self.fields['exames'].queryset = exames_filtrados
+

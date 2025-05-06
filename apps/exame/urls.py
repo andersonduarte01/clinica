@@ -33,7 +33,10 @@ urlpatterns = [
     path('preencher/grupo/folha/', views.preencher_laudo, name='laudo_pdf'),
 
     # area medica #
-    path('area/restrita/<int:pk>/realizar/', views.realizar_exame, name='exame_medico_ver'),
+    path('exame/<int:pk>/finalizar/', views.finalizar_exame, name='finalizar_exame'),
+    path('area/restrita/<int:pk>/realizar/', views.ExameDetailView.as_view(), name='exame_medico_ver'),
+    path('referencia/<int:pk>/salvar/', views.salvar_referencia, name='salvar_referencia'),
+
     path('terceirizado/area/restrita/<int:pk>/anexar/', views.ExameTerceirizado.as_view(), name='exame_medico_anexar'),
     path('pesquisar/', views.BuscarExame.as_view(), name='pesquisar_exame'),
     path('terceirizado/pesquisar/', views.BuscarExameterceirizado.as_view(), name='pesquisar_exame_terceirizado'),
