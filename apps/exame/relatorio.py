@@ -92,3 +92,82 @@ def escrever_texto(c, texto, x, y, font="Helvetica", font_size=10, color=(0, 0, 
     c.setFont(font, font_size)
     c.setFillColorRGB(*color)
     c.drawString(x, y, texto)
+
+
+def configurar_margens(c):
+    """
+    Função para configurar as margens do documento PDF e retornar as margens e os limites de largura e altura.
+    """
+    # Definindo as margens
+    margem_esquerda = 40  # Margem esquerda
+    margem_direita = 40  # Margem direita
+    margem_superior = 40  # Margem superior
+    margem_inferior = 40  # Margem inferior
+
+    # Configurando o tamanho da página
+    c.setPageSize(A4)
+
+    largura, altura = A4  # Obtém o tamanho da página (largura e altura)
+
+    # Calculando o espaço disponível dentro da página para o conteúdo
+    largura_disponivel = largura - margem_esquerda - margem_direita
+    altura_disponivel = altura - margem_superior - margem_inferior
+
+    return margem_esquerda, margem_direita, margem_superior, margem_inferior, largura_disponivel, altura_disponivel
+
+def escrever_texto(c, texto, x, y, font="Helvetica", font_size=10, color=(0, 0, 0)):
+    """
+    Função para escrever o texto no PDF.
+    """
+    c.setFont(font, font_size)
+    c.setFillColorRGB(*color)
+    c.drawString(x, y, texto)
+
+
+def escrever_dados_clinica(c, altura):
+    """
+    Função para escrever as informações da clínica no cabeçalho, centralizado no topo.
+    """
+    # Texto da clínica
+    texto = "Gen's Diagnóstica"
+    largura_texto = c.stringWidth(texto, "Helvetica-Bold", 18)
+    x = (A4[0] - largura_texto) / 2  # Centraliza o texto horizontalmente
+    escrever_texto(c, texto=texto, x=x, y=(altura - 10), font="Helvetica-Bold", font_size=18, color=(0, 0.5, 0))
+
+    # Texto do laboratório
+    texto_laboratorio = "Laboratório de análises clínicas"
+    largura_texto_laboratorio = c.stringWidth(texto_laboratorio, "Helvetica", 9)
+    x_laboratorio = (A4[0] - largura_texto_laboratorio) / 2
+    escrever_texto(c, texto=texto_laboratorio, x=x_laboratorio, y=(altura - 30), font_size=9, color=(0, 0.7, 0.3))
+
+    # Endereço
+    endereco = "Rua Fortunato Silva, Nº164, Pedra Branca/CE"
+    largura_endereco = c.stringWidth(endereco, "Helvetica", 10)
+    x_endereco = (A4[0] - largura_endereco) / 2
+    escrever_texto(c, texto=endereco, x=x_endereco, y=(altura - 45), font_size=10, color=(0, 0, 0))
+
+    # Telefone
+    telefone = "Tel: (88) 9 9995 0037 / 3515 1822"
+    largura_telefone = c.stringWidth(telefone, "Helvetica", 10)
+    x_telefone = (A4[0] - largura_telefone) / 2
+    escrever_texto(c, texto=telefone, x=x_telefone, y=(altura - 60), font_size=10, color=(0, 0, 0))
+
+    # Site
+    site = "gensdiagnostica.com.br"
+    largura_site = c.stringWidth(site, "Helvetica", 10)
+    x_site = (A4[0] - largura_site) / 2
+    escrever_texto(c, texto=site, x=x_site, y=(altura - 75), font_size=10, color=(0, 0, 0))
+
+
+def escrever_exame_info(c, altura, exame):
+
+    texto_codigo = f'Nº {exame.codigo}'
+    largura_codigo = c.stringWidth(texto_codigo, "Helvetica", 11)
+    x_codigo = (A4[0] - largura_codigo) / 2
+    escrever_texto(c, texto=texto_codigo, x=x_codigo, y=(altura + 57), font_size=11, color=(0, 0, 0))
+
+    # Data de emissão
+    texto_emissao = f'Emissão: {exame.data_alterado.strftime("%d/%m/%Y")}'
+    largura_emissao = c.stringWidth(texto_emissao, "Helvetica", 11)
+    x_emissao = (A4[0] - largura_emissao) / 2
+    escrever_texto(c, texto=texto_emissao, x=x_emissao, y=(altura + 18), font_size=11, color=(0, 0, 0))

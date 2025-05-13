@@ -47,7 +47,7 @@ Gen's | Exames Aguardando
               </td>
               <td class="text-center">
                 <a href="{% url 'atendimento:ver_etiqueta' pk=exame.r_exame.first.paciente.pk  data=data %}" class="text-decoration-none text-danger font-weight-bold">
-                  {{exame.r_exame.first.paciente.pk }}<i class="bi bi-file-pdf"></i>
+                  <i class="bi bi-file-pdf"></i>
                 </a>
               </td>
             </tr>

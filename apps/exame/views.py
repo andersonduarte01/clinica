@@ -13,6 +13,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
+from reportlab.lib.colors import Color
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
@@ -23,7 +24,8 @@ from ..core.models import Usuario
 from ..exame.exame_create import objeto_exame
 from ..exame.forms import *
 from ..exame.models import Exame, ReferenciaExame, FatoresReferencia, ValorEsperado, GrupoExame
-from ..exame.relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto
+from ..exame.relatorio import desenhar_retangulo, adicionar_linha_paralela, adicionar_linha_vertical, escrever_texto, \
+    escrever_dados_clinica, escrever_exame_info, configurar_margens
 
 
 class ExameAdd(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -94,7 +96,13 @@ class ExamesListaData(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         data = self.kwargs['data']
-        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False)
+        return Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False, terceirizado=False)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        data = self.kwargs['data']
+        contexto['terceirizados'] = Exame.objects.filter(data_cadastro__date=data, status_exame='AGUARDANDO', padrao=False, terceirizado=True)
+        return contexto
 
 
 class ExamesEtiquetas(LoginRequiredMixin, ListView):
@@ -110,7 +118,6 @@ class ExamesEtiquetas(LoginRequiredMixin, ListView):
         contexto = super().get_context_data(**kwargs)
         contexto['data'] = self.kwargs['data']
         return contexto
-
 
 
 class ExamesGrupoData(LoginRequiredMixin, ListView):
@@ -590,7 +597,6 @@ def salvar_referencia(request, pk):
     return HttpResponseRedirect(f"{url}#referencia{referencia.id}")
 
 
-
 class ExameTerceirizado(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Exame
     form_class = ExameMedicTerceirizado
@@ -605,587 +611,15 @@ class ExameTerceirizado(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context['orcamento'] = orcamento
         return context
 
-# def criar_laudo_medico(request, pk):
-#     exame = get_object_or_404(Exame, pk=pk)
-#     atendimento = OrcamentoExames.objects.filter(exame=exame).first()
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'attachment; filename="{atendimento.paciente}.pdf"'
-#
-#     c = canvas.Canvas(response, pagesize=A4)
-#
-#     ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-#
-#
-#     #linhas paralelas
-#     altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=85.05)
-#     altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=156)
-#
-#     #linhas verticais
-#     linha = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=141.75)
-#     linha_vertical = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=14 * 28.35)
-#
-#     # Desenhar a linha horizontal paralela à linha de 3cm e entre as linhas verticais de 14cm e 5cm
-#     largura_linha_horizontal_15cm = ponto1[0] + 1 * 28.35  # Largura da linha a 15cm da linha vertical à esquerda em pontos
-#     c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
-#     c.line(ponto2[0], altura + 1.5 * 28.35, linha_vertical,
-#            altura + 1.5 * 28.35)
-#
-#
-#     # Escrever o texto "Nome Gen's Diagnóstica" em negrito e cor verde
-#     texto = "Gen's Diagnóstica"
-#     largura_texto = c.stringWidth(texto, "Helvetica-Bold", 14)  # Obter a largura do texto em pontos
-#
-#     escrever_texto(c, texto=texto,
-#                    x=((linha - 40 + linha_vertical - largura_texto) / 2),
-#                    y=(altura + 2.25 * 28.35), font="Helvetica-Bold", font_size=18,
-#                    color=(0, 0.5, 0))
-#
-#     c.setFont("Helvetica", 9)
-#     texto_laboratorio = "Laboratório de análises clínicas"
-#     largura_texto_laboratorio = c.stringWidth(texto_laboratorio)  # Obter a largura do texto em pontos
-#
-#     escrever_texto(c, texto=texto_laboratorio,
-#                    x=((linha + linha_vertical - largura_texto_laboratorio) / 2),
-#                    y=(altura + 1.5 * 28.35 + 10), font_size=9,
-#                    color=(0, 0.7, 0.3))
-#
-#     endereco = "Rua Fortunato Silva, Nº164, Pedra Branca/CE"
-#     largura_endereco = c.stringWidth(endereco)
-#
-#     escrever_texto(c, texto=endereco,
-#                    x=((linha - 16 + linha_vertical - largura_endereco) / 2),
-#                    y=(altura + 1.5 * 28.35 - 3), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     telefone = "Tel: (88) 9 9995 0037 / 3515 1822"
-#     largura_telefone = c.stringWidth(telefone)
-#
-#     escrever_texto(c, texto=telefone,
-#                    x=((linha - 5 + linha_vertical - largura_telefone) / 2),
-#                    y=(altura + 1.5 * 28.35 - 18), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     site = "gensdiagnostica.com.br"
-#     largura_site = c.stringWidth(site)
-#
-#     escrever_texto(c, texto=site,
-#                    x=((linha - 5 + linha_vertical - largura_site) / 2),
-#                    y=(altura + 1.5 * 28.35 - 33), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Nº {exame.codigo}',
-#                    x=(linha_vertical + 5),
-#                    y=(altura + 57), font_size=11,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Emissão: {exame.data_alterado.strftime("%d/%m/%Y")}',
-#                    x=linha_vertical + 5,
-#                    y=(altura + 18), font_size=11,
-#                    color=(0, 0, 0))
-#
-#
-#
-#
-#
-#
-#     # Escrever o nome 'CPF'
-#     cpf_1 = 'Não cadastrado'
-#     if atendimento.paciente.cpf:
-#         cpf_1 = atendimento.paciente.cpf
-#
-#     escrever_texto(c, texto=cpf_1,
-#                    x=ponto1[0] + 5,
-#                    y=(altura1 + 35), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Data de Nascimento: {atendimento.paciente.data_nascimento}',
-#                    x=ponto1[0] + 5,
-#                    y=(altura1 + 15), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Sexo: {atendimento.paciente.sexo}',
-#                    x=ponto1[0] + 370,
-#                    y=(altura1 + 55), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Nome: {atendimento.paciente}',
-#                    x=ponto1[0] + 5,
-#                    y=(altura1 + 55), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Data do exame: {exame.data_cadastro.strftime("%d/%m/%Y")}',
-#                    x=ponto1[0] + 370,
-#                    y=(altura1 + 35), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     escrever_texto(c, texto=f'Número do exame: {exame.codigo}',
-#                    x=ponto1[0] + 370,
-#                    y=(altura1 + 15), font_size=10,
-#                    color=(0, 0, 0))
-#
-#     # Adicionar a imagem entre as linhas horizontais superior e de 3cm
-#     imagem = "https://gensdiagnostica.com.br/static/img/gens.png"  # Caminho para a imagem
-#     largura_imagem = 140  # Largura da imagem em pontos
-#     altura_imagem = 80  # Altura da imagem em pontos
-#     c.drawImage(imagem, ponto1[0] + 1, altura + 1, width=largura_imagem, height=altura_imagem)
-#
-#     data_referencia = None
-#     data_referencia_fator = None
-#     data_referencia_esperado = None
-#     referencias = exame.referencias.all()
-#     for ref in referencias:
-#         if ref.fator is False and ref.esperado is False:
-#             data_referencia = [
-#                 ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-#             ]
-#         elif ref.fator is True and ref.esperado is False:
-#             data_referencia_fator = [
-#                 ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-#             ]
-#         elif ref.fator is False and ref.esperado is True:
-#             data_referencia_esperado = [
-#                 ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-#             ]
-#
-#     style = TableStyle([
-#         ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
-#         ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
-#         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinhamento central para todas as células
-#         ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),  # Bordas da tabela
-#     ])
-#
-#     largura_disponivel, _ = A4
-#
-#     for referencia in referencias:
-#         if referencia.fator is False and referencia.esperado is False:
-#             ref = [referencia.nome_referencia, referencia.valor_obtido,
-#                    f'{referencia.limite_inferior} a {referencia.limite_superior}']
-#             data_referencia.append(ref)
-#         elif referencia.fator is True and referencia.esperado is False:
-#             fator_ref = referencia.fatores.all()
-#             fator_nome1 = ''
-#             fator10 = ''
-#             fator100 = ''
-#             for fator in fator_ref:
-#                 if fator.nome_fator is None:
-#                     fator_nome1 = f'{fator.idade}'
-#                 else:
-#                     fator_nome1 = f'{fator.nome_fator}'
-#
-#                 fator10 = fator10 + f' {fator_nome1} || '
-#                 fator100 = fator100 + f'{fator.limite_inferior} a {fator.limite_superior}  || '
-#
-#             fator100 = fator100[:-3]
-#             fator10 = fator10[:-3]
-#
-#             linhas1 = textwrap.wrap(fator10, width=50)
-#             for linha in linhas1:
-#                 fator0 = ['', '', f'{linha}']
-#                 data_referencia_fator.append(fator0)
-#
-#             linhas10 = textwrap.wrap(fator100, width=50)
-#
-#             numero_linha = 1
-#             for linha in linhas10:
-#                 if numero_linha == 1:
-#                     fator1 = [referencia.nome_referencia, referencia.valor_obtido, f'{linha}']
-#                 else:
-#                     fator1 = ['', '', f'{linha}']
-#
-#                 data_referencia_fator.append(fator1)
-#                 numero_linha += 1
-#
-#             esperado1 = ['', '', '']
-#             data_referencia_fator.append(esperado1)
-#
-#         elif referencia.fator is False and referencia.esperado is True:
-#             ref_esperado = referencia.padrao.all()
-#             numero_1 = 1
-#             esperado1 = ''
-#             for esperado in ref_esperado:
-#                 if numero_1 == 1:
-#                     esperado1 = [referencia.nome_referencia, referencia.valor_obtido,
-#                                  f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-#                 else:
-#                     esperado1 = ['', '',
-#                                  f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-#                 data_referencia_esperado.append(esperado1)
-#                 numero_1 += 1
-#             if numero_1 > 2:
-#                 esperado1 = ['', '', '']
-#                 data_referencia_esperado.append(esperado1)
-#         else:
-#             fator_ref = referencia.fatores.all()
-#
-#     observacao = 0
-#     tabela_referencia_altura = 0
-#
-#     if data_referencia != None:
-#         larguras_colunas = [212, 100, 225]
-#         t = Table(data_referencia, colWidths=larguras_colunas)
-#         largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-#         t.setStyle(style)
-#         largura_tabela = sum(t._argW)
-#         posicao_horizontal_tabela = ponto1[0] + (((19 * 28.35) - largura_tabela) / 2)
-#         tabela_referencia_altura = 20 + altura_tabela
-#         observacao += tabela_referencia_altura
-#         posicao_vertical_tabela = altura1 - tabela_referencia_altura
-#         t.wrapOn(c, largura_tabela, 100)
-#         t.drawOn(c, posicao_horizontal_tabela, posicao_vertical_tabela)
-#         print(f'Observação: {observacao}')
-#
-#     tabela_referencia_altura_ref = 0
-#
-#     if data_referencia_fator != None:
-#         if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 150:
-#             c.showPage()
-#             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-#             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
-#             larguras_colunas_ref = [212, 100, 225]  # total 537
-#             tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
-#             largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
-#             tr.setStyle(style)
-#             largura_tabela_ref = sum(tr._argW)
-#             posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
-#             tabela_referencia_altura_ref = altura_tabela_ref
-#             observacao = tabela_referencia_altura_ref
-#             posicao_vertical_tabela_ref = altura1 - tabela_referencia_altura_ref
-#             tr.wrapOn(c, largura_tabela_ref, 100)
-#             tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
-#             print(f'Observação DRF IF: {observacao}')
-#             print(f'DRF IF: {tabela_referencia_altura_ref}')
-#         else:
-#             larguras_colunas_ref = [212, 100, 225]  # total 537
-#             tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
-#             largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
-#             tr.setStyle(style)
-#             largura_tabela_ref = sum(tr._argW)
-#             posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
-#             tabela_referencia_altura_ref = observacao + altura_tabela_ref + 20
-#             observacao = tabela_referencia_altura_ref
-#             posicao_vertical_tabela_ref = altura1 - tabela_referencia_altura_ref
-#             tr.wrapOn(c, largura_tabela_ref, 100)
-#             tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
-#             print(f'Observação DRF: {observacao}')
-#
-#     tabela_referencia_altura_esp = 0
-#     if data_referencia_esperado != None:
-#
-#         if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 150:
-#             c.showPage()
-#             ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-#             altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
-#             larguras_colunas_esperado = [212, 100, 225]  # total 537
-#             te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
-#             largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
-#             te.setStyle(style)
-#             largura_tabela_esp = sum(te._argW)
-#             posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
-#             tabela_referencia_altura_esp = altura_tabela_esp
-#             observacao = tabela_referencia_altura_esp
-#             posicao_vertical_tabela_esp = altura1 - tabela_referencia_altura_esp
-#             te.wrapOn(c, largura_tabela_esp, 100)
-#             te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
-#             print(f'Observação DRE IF: {observacao}')
-#
-#         else:
-#             larguras_colunas_esperado = [212, 100, 225]  # total 537
-#             te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
-#             largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
-#             te.setStyle(style)
-#             largura_tabela_esp = sum(te._argW)
-#             posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
-#             tabela_referencia_altura_esp = observacao + altura_tabela_esp + 20
-#             observacao = tabela_referencia_altura_esp
-#             posicao_vertical_tabela_esp = altura1 - tabela_referencia_altura_esp
-#             te.wrapOn(c, largura_tabela_esp, 100)
-#             te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
-#             print(f'Observação DRE: {observacao}')
-#
-#     observacoes = f'Observações:'
-#     if len(exame.comentario) == 0:
-#         observacoes = ''
-#
-#     escrever_texto(c, texto=observacoes,
-#                    x=ponto1[0] + 15,
-#                    y=(altura1 - observacao - 20), font_size=10,
-#                    color=(0, 0, 0), font="Helvetica-Bold")
-#
-#
-#     c.setFont("Helvetica", 9)  # Definir a fonte em negrito e o tamanho do texto
-#     c.setFillColorRGB(0, 0, 0)  # Definir a cor preta (RGB)
-#     observacoes1 = f'{exame.comentario}'
-#
-#     # Largura máxima da linha (pode ajustar conforme necessário)
-#     largura_maxima = 130
-#
-#     # Dividir o texto em linhas com base na largura máxima
-#     linhas = textwrap.wrap(observacoes1, width=largura_maxima)
-#
-#     # Calcular as coordenadas para centralizar o texto entre a linha de 4cm e a linha de 3cm
-#     posicao_horizontal_observacao = ponto1[0] + 15
-#     posicao_vertical_observacao = altura1 - observacao - 30
-#
-#     # Escrever cada linha individualmente
-#     obs_1 = 1
-#     for linha in linhas:
-#         if obs_1 == 1:
-#             c.drawString(posicao_horizontal_observacao, posicao_vertical_observacao - 5, linha)
-#             posicao_vertical_observacao -= 20
-#         # Atualizar a posição vertical para a próxima linha
-#         else:
-#             c.drawString(posicao_horizontal_observacao, posicao_vertical_observacao, linha)
-#             posicao_vertical_observacao -= 15
-#
-#         obs_1 += 1
-#
-#     # Desenhar a linha paralela à linha superior do paralelogramo (a 26cm)
-#     linha_inferior = adicionar_linha_paralela(c, ponto1, ponto2, intervalo=0)
-#     imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
-#
-#     # Baixa a imagem da URL
-#     response_imagem = requests.get(imagem_url)
-#     if response_imagem.status_code == 200:
-#        imagem_bytes = response_imagem.content
-#     else:
-#        return HttpResponse('Erro ao baixar a imagem', status=500)
-#
-#     imagem_reader = ImageReader(BytesIO(imagem_bytes))
-#     largura_imagem = 128
-#     altura_imagem = 112
-#     posicao_horizontal_central = ((19 * 28.35) - largura_imagem) / 2
-#     c.drawImage(imagem_reader, posicao_horizontal_central, linha_inferior + 20, width=largura_imagem,
-#     height=altura_imagem)
-#
-#     c.save()
-#     return response
 
 def criar_laudo_medico(request, pk):
     exame = get_object_or_404(Exame, pk=pk)
-    atendimento = OrcamentoExames.objects.filter(exame=exame).first()
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{atendimento.paciente}.pdf"'
 
-    if exame.nome == 'HEMOGRAMA COMPLETO':
+    if exame.nome == "HEMOGRAMA COMPLETO":
+        atendimento = OrcamentoExames.objects.filter(exame=exame).first()
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{atendimento.paciente}.pdf"'
 
-        c = canvas.Canvas(response, pagesize=A4)
-
-        ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-
-        # linhas paralelas
-        altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=85.05)
-        altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=156)
-
-        # linhas verticais
-        linha = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=141.75)
-        linha_vertical = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=14 * 28.35)
-
-        # Desenhar a linha horizontal paralela à linha de 3cm e entre as linhas verticais de 14cm e 5cm
-        largura_linha_horizontal_15cm = ponto1[0] + 1 * 28.35  # Largura da linha a 15cm da linha vertical à esquerda em pontos
-        c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
-        c.line(ponto2[0], altura + 1.5 * 28.35, linha_vertical,
-               altura + 1.5 * 28.35)
-
-        # Escrever o texto "Nome Gen's Diagnóstica" em negrito e cor verde
-        texto = "Gen's Diagnóstica"
-        largura_texto = c.stringWidth(texto, "Helvetica-Bold", 14)  # Obter a largura do texto em pontos
-
-        escrever_texto(c, texto=texto,
-                       x=((linha - 40 + linha_vertical - largura_texto) / 2),
-                       y=(altura + 2.25 * 28.35), font="Helvetica-Bold", font_size=16,
-                       color=(0, 0.5, 0))
-
-        c.setFont("Helvetica", 8)
-        texto_laboratorio = "Laboratório de análises clínicas"
-        largura_texto_laboratorio = c.stringWidth(texto_laboratorio)  # Obter a largura do texto em pontos
-
-        escrever_texto(c, texto=texto_laboratorio,
-                       x=((linha + linha_vertical - largura_texto_laboratorio) / 2),
-                       y=(altura + 1.5 * 28.35 + 10), font_size=8,
-                       color=(0, 0.7, 0.3))
-
-        endereco = "Rua Fortunato Silva, Nº164, Pedra Branca/CE"
-        largura_endereco = c.stringWidth(endereco)
-
-        escrever_texto(c, texto=endereco,
-                       x=((linha - 16 + linha_vertical - largura_endereco) / 2),
-                       y=(altura + 1.5 * 28.35 - 3), font_size=8,
-                       color=(0, 0, 0))
-
-        telefone = "Tel: (88) 9 9995 0037 / 3515 1822"
-        largura_telefone = c.stringWidth(telefone)
-
-        escrever_texto(c, texto=telefone,
-                       x=((linha - 5 + linha_vertical - largura_telefone) / 2),
-                       y=(altura + 1.5 * 28.35 - 18), font_size=8,
-                       color=(0, 0, 0))
-
-        site = "gensdiagnostica.com.br"
-        largura_site = c.stringWidth(site)
-
-        escrever_texto(c, texto=site,
-                       x=((linha - 5 + linha_vertical - largura_site) / 2),
-                       y=(altura + 1.5 * 28.35 - 33), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Nº {exame.codigo}',
-                       x=(linha_vertical + 5),
-                       y=(altura + 57), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Emissão: {exame.data_alterado.strftime("%d/%m/%Y")}',
-                       x=linha_vertical + 5,
-                       y=(altura + 18), font_size=8,
-                       color=(0, 0, 0))
-
-        # Escrever o nome 'CPF'
-        cpf_1 = 'Não cadastrado'
-        if atendimento.paciente.cpf:
-            cpf_1 = f'CPF: {atendimento.paciente.cpf}'
-
-        escrever_texto(c, texto=cpf_1,
-                       x=ponto1[0] + 5,
-                       y=(altura1 + 35), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Nome: {exame.nome}',
-                       x=ponto1[0] + 5,
-                       y=(altura1 + 15), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Sexo: {atendimento.paciente.sexo}',
-                       x=ponto1[0] + 370,
-                       y=(altura1 + 55), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Nome: {atendimento.paciente}',
-                       x=ponto1[0] + 5,
-                       y=(altura1 + 55), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Número do exame: {exame.codigo}',
-                       x=ponto1[0] + 370,
-                       y=(altura1 + 35), font_size=8,
-                       color=(0, 0, 0))
-
-        escrever_texto(c, texto=f'Método: {exame.metodo}',
-                       x=ponto1[0] + 370,
-                       y=(altura1 + 15), font_size=8,
-                       color=(0, 0, 0))
-
-        # Adicionar a imagem entre as linhas horizontais superior e de 3cm
-        imagem = "https://gensdiagnostica.com.br/static/img/gens.png"  # Caminho para a imagem
-        largura_imagem = 140  # Largura da imagem em pontos
-        altura_imagem = 80  # Altura da imagem em pontos
-        c.drawImage(imagem, ponto1[0] + 1, altura + 1, width=largura_imagem, height=altura_imagem)
-
-        referencias = exame.referencias.all()
-        eritrograma = referencias[:8]
-        leucocitos = referencias[8]
-        neutrofilos = referencias[9:20]
-        final = referencias[20:]
-        data_referencia = [
-                    ['REFERÊNCIA', 'V. ENCONTRADO', f'HOMENS | MULHERES'],
-                ]
-
-
-        style = TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
-            ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinhamento central para todas as células
-            ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),  # Bordas da tabela
-        ])
-
-        largura_disponivel, _ = A4
-
-        for referencia in eritrograma:
-            fatores = referencia.fatores.all()
-            if fatores.count() > 0:
-                # Concatena todos os fatores em uma string única
-                fatores_texto = " | ".join(
-                    f"{f.limite_inferior} a {f.limite_superior}" for f in fatores
-                )
-                ref = [referencia.nome_referencia, referencia.valor_obtido, fatores_texto]
-                data_referencia.append(ref)
-            else:
-                # Sem fatores
-                ref = [referencia.nome_referencia, referencia.valor_obtido, f"{referencia.limite_inferior} a {referencia.limite_superior}"]
-                data_referencia.append(ref)
-
-
-
-        if data_referencia != None:
-            larguras_colunas = [200, 90, 250]
-            t = Table(data_referencia, colWidths=larguras_colunas)
-            largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-            t.setStyle(style)
-            largura_tabela = sum(t._argW)
-            posicao_horizontal_tabela = ponto1[0] + (((19 * 28.35) - largura_tabela) / 2)
-            tabela_referencia_altura = 1 + altura_tabela
-            posicao_vertical_tabela = altura1 - tabela_referencia_altura
-            t.wrapOn(c, largura_tabela, 100)
-            t.drawOn(c, posicao_horizontal_tabela, posicao_vertical_tabela)
-
-
-        #         fator_ref = referencia.fatores.all()
-        #         fator_nome1 = ''
-        #         fator10 = ''
-        #         fator100 = ''
-        #         for fator in fator_ref:
-        #             if fator.nome_fator is None:
-        #                 fator_nome1 = f'{fator.idade}'
-        #             else:
-        #                 fator_nome1 = f'{fator.nome_fator}'
-        #
-        #             fator10 = fator10 + f' {fator_nome1} || '
-        #             fator100 = fator100 + f'{fator.limite_inferior} a {fator.limite_superior}  || '
-        #
-        #         fator100 = fator100[:-3]
-        #         fator10 = fator10[:-3]
-        #
-        #         linhas1 = textwrap.wrap(fator10, width=50)
-        #         for linha in linhas1:
-        #             fator0 = ['', '', f'{linha}']
-        #             data_referencia_fator.append(fator0)
-        #
-        #         linhas10 = textwrap.wrap(fator100, width=50)
-        #
-        #         numero_linha = 1
-        #         for linha in linhas10:
-        #             if numero_linha == 1:
-        #                 fator1 = [referencia.nome_referencia, referencia.valor_obtido, f'{linha}']
-        #             else:
-        #                 fator1 = ['', '', f'{linha}']
-        #
-        #             data_referencia_fator.append(fator1)
-        #             numero_linha += 1
-        #
-        #         esperado1 = ['', '', '']
-        #         data_referencia_fator.append(esperado1)
-        #
-        #     elif referencia.fator is False and referencia.esperado is True:
-        #         ref_esperado = referencia.padrao.all()
-        #         numero_1 = 1
-        #         esperado1 = ''
-        #         for esperado in ref_esperado:
-        #             if numero_1 == 1:
-        #                 esperado1 = [referencia.nome_referencia, referencia.valor_obtido,
-        #                              f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-        #             else:
-        #                 esperado1 = ['', '',
-        #                              f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-        #             data_referencia_esperado.append(esperado1)
-        #             numero_1 += 1
-        #         if numero_1 > 2:
-        #             esperado1 = ['', '', '']
-        #             data_referencia_esperado.append(esperado1)
-        #     else:
-        #         fator_ref = referencia.fatores.all()
-        #
-        c.save()
-        return response
-
-    else:
         c = canvas.Canvas(response, pagesize=A4)
 
         ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
@@ -1260,25 +694,22 @@ def criar_laudo_medico(request, pk):
 
 
 
-
-
-
         # Escrever o nome 'CPF'
         cpf_1 = 'Não cadastrado'
         if atendimento.paciente.cpf:
             cpf_1 = atendimento.paciente.cpf
 
-        escrever_texto(c, texto=cpf_1,
+        escrever_texto(c,texto=f'CPF: {cpf_1}',
                        x=ponto1[0] + 5,
                        y=(altura1 + 35), font_size=10,
                        color=(0, 0, 0))
 
-        escrever_texto(c, texto=f'Data de Nascimento: {atendimento.paciente.data_nascimento}',
+        escrever_texto(c, texto=f'Material: {exame.material}',
                        x=ponto1[0] + 5,
                        y=(altura1 + 15), font_size=10,
                        color=(0, 0, 0))
 
-        escrever_texto(c, texto=f'Sexo: {atendimento.paciente.sexo}',
+        escrever_texto(c, texto=f'Data de Nascimento: {atendimento.paciente.data_nascimento}',
                        x=ponto1[0] + 370,
                        y=(altura1 + 55), font_size=10,
                        color=(0, 0, 0))
@@ -1288,12 +719,12 @@ def criar_laudo_medico(request, pk):
                        y=(altura1 + 55), font_size=10,
                        color=(0, 0, 0))
 
-        escrever_texto(c, texto=f'Data do exame: {exame.data_cadastro.strftime("%d/%m/%Y")}',
+        escrever_texto(c, texto=f'Número do exame: {exame.codigo}',
                        x=ponto1[0] + 370,
                        y=(altura1 + 35), font_size=10,
                        color=(0, 0, 0))
 
-        escrever_texto(c, texto=f'Número do exame: {exame.codigo}',
+        escrever_texto(c, texto=f'Método: {exame.metodo}',
                        x=ponto1[0] + 370,
                        y=(altura1 + 15), font_size=10,
                        color=(0, 0, 0))
@@ -1304,237 +735,634 @@ def criar_laudo_medico(request, pk):
         altura_imagem = 80  # Altura da imagem em pontos
         c.drawImage(imagem, ponto1[0] + 1, altura + 1, width=largura_imagem, height=altura_imagem)
 
-        data_referencia = None
-        data_referencia_fator = None
-        data_referencia_esperado = None
+        distancia = altura1
+
+        escrever_texto(c, texto=f'{exame.nome}',
+                       x=ponto1[0] + 5,
+                       y=(altura1 - 15), font_size=10,
+                       color=(0, 0, 0))
+
+        distancia -= 15
+
         referencias = exame.referencias.all()
-        for ref in referencias:
-            if ref.fator is False and ref.esperado is False:
-                data_referencia = [
-                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-                ]
-            elif ref.fator is True and ref.esperado is False:
-                data_referencia_fator = [
-                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-                ]
-            elif ref.fator is False and ref.esperado is True:
-                data_referencia_esperado = [
-                    ['REFERÊNCIA', 'V. ENCONTRADO', 'VALORES DE REFERÊNCIA'],
-                ]
+        serie_vermelha = referencias[:8]
+        leucocitos = referencias[8:9]
+        serie_branca = referencias[9:20]
+        outros = referencias[20:]
 
-        style = TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), (0.8, 0.8, 0.8)),  # Cor de fundo para o cabeçalho
-            ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),  # Cor do texto para o cabeçalho
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinhamento central para todas as células
-            ('GRID', (0, 0), (-1, -1), 1, (0.8, 0.8, 0.8)),  # Bordas da tabela
-        ])
+        escrever_texto(c, texto=f'ERITROGRAMA',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 20), font_size=9,
+                       color=(0, 0, 0))
 
-        largura_disponivel, _ = A4
+        escrever_texto(c, texto=f'VALORES DE REFERÊNCIA',
+                       x=ponto1[0] + 270,
+                       y=(distancia - 20), font_size=9,
+                       color=(0, 0, 0))
 
-        for referencia in referencias:
-            if referencia.fator is False and referencia.esperado is False:
-                ref = [referencia.nome_referencia, referencia.valor_obtido,
-                       f'{referencia.limite_inferior} a {referencia.limite_superior}']
-                data_referencia.append(ref)
-            elif referencia.fator is True and referencia.esperado is False:
-                fator_ref = referencia.fatores.all()
-                fator_nome1 = ''
-                fator10 = ''
-                fator100 = ''
-                for fator in fator_ref:
-                    if fator.nome_fator is None:
-                        fator_nome1 = f'{fator.idade}'
-                    else:
-                        fator_nome1 = f'{fator.nome_fator}'
+        distancia -= 20
 
-                    fator10 = fator10 + f' {fator_nome1} || '
-                    fator100 = fator100 + f'{fator.limite_inferior} a {fator.limite_superior}  || '
+        # Calcula o maior tamanho entre os nomes de referência
+        maior_tamanho = max(len(ref.nome_referencia) for ref in serie_vermelha)
 
-                fator100 = fator100[:-3]
-                fator10 = fator10[:-3]
+        for referencia_vermelha in serie_vermelha:
+            if not referencia_vermelha.fator and not referencia_vermelha.esperado:
+                nome = referencia_vermelha.nome_referencia
+                fator = referencia_vermelha.valor_obtido
+                max_min = f'{referencia_vermelha.limite_inferior} a {referencia_vermelha.limite_superior}'
+                # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + fator
 
-                linhas1 = textwrap.wrap(fator10, width=50)
-                for linha in linhas1:
-                    fator0 = ['', '', f'{linha}']
-                    data_referencia_fator.append(fator0)
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font= "Courier")
 
-                linhas10 = textwrap.wrap(fator100, width=50)
+                escrever_texto(c, texto=max_min,
+                               x=ponto1[0] + 270,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font= "Courier")
 
-                numero_linha = 1
-                for linha in linhas10:
-                    if numero_linha == 1:
-                        fator1 = [referencia.nome_referencia, referencia.valor_obtido, f'{linha}']
-                    else:
-                        fator1 = ['', '', f'{linha}']
+                distancia -= 13
 
-                    data_referencia_fator.append(fator1)
-                    numero_linha += 1
+            elif referencia_vermelha.fator and not referencia_vermelha.esperado:
+                nome = referencia_vermelha.nome_referencia
+                fator = referencia_vermelha.valor_obtido
 
-                esperado1 = ['', '', '']
-                data_referencia_fator.append(esperado1)
+                fatores = referencia_vermelha.fatores.all()
+                max_min = ''
+                for fat in fatores:
+                    max_min += f'{fat.nome_fator}: {fat.limite_inferior} a {fat.limite_superior} | '
+                # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
 
-            elif referencia.fator is False and referencia.esperado is True:
-                ref_esperado = referencia.padrao.all()
-                numero_1 = 1
-                esperado1 = ''
-                for esperado in ref_esperado:
-                    if numero_1 == 1:
-                        esperado1 = [referencia.nome_referencia, referencia.valor_obtido,
-                                     f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-                    else:
-                        esperado1 = ['', '',
-                                     f'{esperado.tipo_valor}: {esperado.valor_esperado}']
-                    data_referencia_esperado.append(esperado1)
-                    numero_1 += 1
-                if numero_1 > 2:
-                    esperado1 = ['', '', '']
-                    data_referencia_esperado.append(esperado1)
-            else:
-                fator_ref = referencia.fatores.all()
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + fator
 
-        observacao = 0
-        tabela_referencia_altura = 0
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
 
-        if data_referencia != None:
-            larguras_colunas = [212, 100, 225]
-            t = Table(data_referencia, colWidths=larguras_colunas)
-            largura_tabela, altura_tabela = t.wrapOn(None, largura_disponivel, 0)
-            t.setStyle(style)
-            largura_tabela = sum(t._argW)
-            posicao_horizontal_tabela = ponto1[0] + (((19 * 28.35) - largura_tabela) / 2)
-            tabela_referencia_altura = 20 + altura_tabela
-            observacao += tabela_referencia_altura
-            posicao_vertical_tabela = altura1 - tabela_referencia_altura
-            t.wrapOn(c, largura_tabela, 100)
-            t.drawOn(c, posicao_horizontal_tabela, posicao_vertical_tabela)
-            print(f'Observação: {observacao}')
+                escrever_texto(c, texto=max_min[:-2],
+                               x=ponto1[0] + 270,
+                               y=(distancia - 13), font_size=7,
+                               color=(0, 0, 0), font="Courier")
 
-        tabela_referencia_altura_ref = 0
-
-        if data_referencia_fator != None:
-            if altura1 - (observacao + (len(data_referencia_fator) * 20)) <= 150:
-                c.showPage()
-                ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-                altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
-                larguras_colunas_ref = [212, 100, 225]  # total 537
-                tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
-                largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
-                tr.setStyle(style)
-                largura_tabela_ref = sum(tr._argW)
-                posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
-                tabela_referencia_altura_ref = altura_tabela_ref
-                observacao = tabela_referencia_altura_ref
-                posicao_vertical_tabela_ref = altura1 - tabela_referencia_altura_ref
-                tr.wrapOn(c, largura_tabela_ref, 100)
-                tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
-                print(f'Observação DRF IF: {observacao}')
-                print(f'DRF IF: {tabela_referencia_altura_ref}')
-            else:
-                larguras_colunas_ref = [212, 100, 225]  # total 537
-                tr = Table(data_referencia_fator, colWidths=larguras_colunas_ref)
-                largura_tabela_ref, altura_tabela_ref = tr.wrapOn(None, largura_disponivel, 0)
-                tr.setStyle(style)
-                largura_tabela_ref = sum(tr._argW)
-                posicao_horizontal_tabela_ref = ponto1[0] + (((19 * 28.35) - largura_tabela_ref) / 2)
-                tabela_referencia_altura_ref = observacao + altura_tabela_ref + 20
-                observacao = tabela_referencia_altura_ref
-                posicao_vertical_tabela_ref = altura1 - tabela_referencia_altura_ref
-                tr.wrapOn(c, largura_tabela_ref, 100)
-                tr.drawOn(c, posicao_horizontal_tabela_ref, posicao_vertical_tabela_ref)
-                print(f'Observação DRF: {observacao}')
-
-        tabela_referencia_altura_esp = 0
-        if data_referencia_esperado != None:
-
-            if altura1 - (observacao + (len(data_referencia_esperado) * 20)) <= 150:
-                c.showPage()
-                ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
-                altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=0)
-                larguras_colunas_esperado = [212, 100, 225]  # total 537
-                te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
-                largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
-                te.setStyle(style)
-                largura_tabela_esp = sum(te._argW)
-                posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
-                tabela_referencia_altura_esp = altura_tabela_esp
-                observacao = tabela_referencia_altura_esp
-                posicao_vertical_tabela_esp = altura1 - tabela_referencia_altura_esp
-                te.wrapOn(c, largura_tabela_esp, 100)
-                te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
-                print(f'Observação DRE IF: {observacao}')
-
-            else:
-                larguras_colunas_esperado = [212, 100, 225]  # total 537
-                te = Table(data_referencia_esperado, colWidths=larguras_colunas_esperado)
-                largura_tabela_esp, altura_tabela_esp = te.wrapOn(None, largura_disponivel, 0)
-                te.setStyle(style)
-                largura_tabela_esp = sum(te._argW)
-                posicao_horizontal_tabela_esp = ponto1[0] + (((19 * 28.35) - largura_tabela_esp) / 2)
-                tabela_referencia_altura_esp = observacao + altura_tabela_esp + 20
-                observacao = tabela_referencia_altura_esp
-                posicao_vertical_tabela_esp = altura1 - tabela_referencia_altura_esp
-                te.wrapOn(c, largura_tabela_esp, 100)
-                te.drawOn(c, posicao_horizontal_tabela_esp, posicao_vertical_tabela_esp)
-                print(f'Observação DRE: {observacao}')
-
-        observacoes = f'Observações:'
-        if len(exame.comentario) == 0:
-            observacoes = ''
-
-        escrever_texto(c, texto=observacoes,
-                       x=ponto1[0] + 15,
-                       y=(altura1 - observacao - 20), font_size=10,
-                       color=(0, 0, 0), font="Helvetica-Bold")
+                distancia -= 13
 
 
-        c.setFont("Helvetica", 9)  # Definir a fonte em negrito e o tamanho do texto
-        c.setFillColorRGB(0, 0, 0)  # Definir a cor preta (RGB)
-        observacoes1 = f'{exame.comentario}'
+        escrever_texto(c, texto=f'Observações: ',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 13), font_size=7,
+                       color=(0, 0, 0), font="Courier")
 
-        # Largura máxima da linha (pode ajustar conforme necessário)
-        largura_maxima = 130
+        distancia -= 25
 
-        # Dividir o texto em linhas com base na largura máxima
-        linhas = textwrap.wrap(observacoes1, width=largura_maxima)
+        escrever_texto(c, texto=f'{leucocitos[0].nome_referencia} totais.: {leucocitos[0].valor_obtido}',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 13), font_size=8,
+                       color=(0, 0, 0), font="Courier")
 
-        # Calcular as coordenadas para centralizar o texto entre a linha de 4cm e a linha de 3cm
-        posicao_horizontal_observacao = ponto1[0] + 15
-        posicao_vertical_observacao = altura1 - observacao - 30
+        escrever_texto(c, texto=f'{leucocitos[0].limite_inferior} a {leucocitos[0].limite_superior}',
+                       x=ponto1[0] + 270,
+                       y=(distancia - 13), font_size=7,
+                       color=(0, 0, 0), font="Courier")
 
-        # Escrever cada linha individualmente
-        obs_1 = 1
+        distancia -= 25
+
+        escrever_texto(c, texto=f'',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 15), font_size=9,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'VALORES DE REFERÊNCIA',
+                       x=ponto1[0] + 270,
+                       y=(distancia - 15), font_size=9,
+                       color=(0, 0, 0))
+
+        distancia -= 18
+
+        # Calcula o maior tamanho entre os nomes de referência
+        maior_tamanho = max(len(ref.nome_referencia) for ref in serie_branca)
+        maior_tamanho_fator = 0
+        for referencia in serie_branca:
+            for fator in referencia.fatores.all():
+                if len(fator.nome_fator) > maior_tamanho_fator:
+                    maior_tamanho_fator = len(fator.nome_fator)
+
+        for referencia_branca in serie_branca:
+            nome = referencia_branca.nome_referencia
+            esperados_ref1 = 270
+            esperados_valor = ''
+            if not referencia_branca.fator and referencia_branca.esperado:
+                esperados = referencia_branca.padrao.all()
+                for espere in esperados:
+                    escrever_texto(c, texto=f'{espere.tipo_valor}: {espere.valor_esperado}',
+                                   x=ponto1[0] + esperados_ref1,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+                    esperados_valor += f'{espere.esperado_obtido}             '
+                    esperados_ref1 += 110
+            # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + esperados_valor[:-5]
+
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+            elif referencia_branca.fator and referencia_branca.esperado:
+                fatores = referencia_branca.fatores.all()
+                esperados = referencia_branca.padrao.all()
+                esperados_ref = ''
+                for espere in esperados:
+                    esperados_ref += f'{espere.tipo_valor}: {espere.valor_esperado}'
+                    esperados_valor += f'{espere.esperado_obtido}'
+
+                max_min = ''
+                for fat in fatores:
+                    max_min += f'{fat.nome_fator}: {fat.limite_inferior} a {fat.limite_superior}'
+            # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + referencia_branca.valor_obtido
+
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+                escrever_texto(c, texto=esperados_valor,
+                               x=ponto1[0] + 150,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+
+                escrever_texto(c, texto=f'{max_min}',
+                               x=ponto1[0] + 270,
+                               y=(distancia - 13), font_size=7,
+                               color=(0, 0, 0), font="Courier")
+
+                escrever_texto(c, texto=f'{esperados_ref}',
+                               x=ponto1[0] +380,
+                               y=(distancia - 13), font_size=7,
+                               color=(0, 0, 0), font="Courier")
+
+            distancia -= 13
+
+        escrever_texto(c, texto=f'Observações: ',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 13), font_size=7,
+                       color=(0, 0, 0), font="Courier")
+
+        distancia -= 30
+
+        maior_tamanho = max(len(ref.nome_referencia) for ref in outros)
+        for outro in outros:
+            nome = outro.nome_referencia
+            # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+            nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + outro.valor_obtido
+
+            escrever_texto(c, texto=nome_formatado,
+                           x=ponto1[0] + 5,
+                           y=(distancia - 13), font_size=8,
+                           color=(0, 0, 0), font="Courier")
+
+            escrever_texto(c, texto=f'{outro.limite_inferior} a {outro.limite_superior}',
+                           x=ponto1[0] + 270,
+                           y=(distancia - 13), font_size=7,
+                           color=(0, 0, 0), font="Courier")
+
+            distancia -= 13
+
+        distancia -= 10
+
+        escrever_texto(c, texto=f'Observações:',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 15), font_size=7,
+                       color=(0, 0, 0), font="Courier")
+
+        distancia -= 15
+
+        comentario = exame.comentario or ''
+        max_largura = 500
+        largura_caractere = 4.2  # aproximação para Courier 7pt
+        max_caracteres = int(max_largura / largura_caractere)
+
+        linhas = textwrap.wrap(f'{comentario}', width=max_caracteres)
+
         for linha in linhas:
-            if obs_1 == 1:
-                c.drawString(posicao_horizontal_observacao, posicao_vertical_observacao - 5, linha)
-                posicao_vertical_observacao -= 20
-            # Atualizar a posição vertical para a próxima linha
-            else:
-                c.drawString(posicao_horizontal_observacao, posicao_vertical_observacao, linha)
-                posicao_vertical_observacao -= 15
+            escrever_texto(c, texto=linha,
+                           x=ponto1[0] + 10,
+                           y=(distancia - 15), font_size=7,
+                           color=(0, 0, 0), font="Courier")
+            distancia -= 10
 
-            obs_1 += 1
 
-        # Desenhar a linha paralela à linha superior do paralelogramo (a 26cm)
-        linha_inferior = adicionar_linha_paralela(c, ponto1, ponto2, intervalo=0)
+
         imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
 
-        # Baixa a imagem da URL
+        # Baixar a imagem
         response_imagem = requests.get(imagem_url)
         if response_imagem.status_code == 200:
             imagem_bytes = response_imagem.content
+            imagem_reader = ImageReader(BytesIO(imagem_bytes))
+
+            largura_imagem = 120
+            altura_imagem = 100
+
+            # Calcular posição da assinatura
+            y_assinatura = ponto4[0] + 10
+            x_assinatura = ponto4[0] + ((ponto3[0] - ponto4[0]) - largura_imagem) / 2
+
+            # Inserir imagem no PDF
+            c.drawImage(imagem_reader, x_assinatura, y_assinatura, width=largura_imagem, height=altura_imagem, mask='auto')
         else:
             return HttpResponse('Erro ao baixar a imagem', status=500)
 
+    else:
+        atendimento = OrcamentoExames.objects.filter(exame=exame).first()
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{atendimento.paciente}.pdf"'
+
+        c = canvas.Canvas(response, pagesize=A4)
+
+        ponto1, ponto2, ponto3, ponto4 = desenhar_retangulo(c=c)
+
+        # linhas paralelas
+        altura = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=85.05)
+        altura1 = adicionar_linha_paralela(c, ponto3, ponto4, intervalo=156)
+
+        # linhas verticais
+        linha = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=141.75)
+        linha_vertical = adicionar_linha_vertical(c, ponto1, ponto3, altura=85.05, largura_intervalo=14 * 28.35)
+
+        # Desenhar a linha horizontal paralela à linha de 3cm e entre as linhas verticais de 14cm e 5cm
+        largura_linha_horizontal_15cm = ponto1[
+                                            0] + 1 * 28.35  # Largura da linha a 15cm da linha vertical à esquerda em pontos
+        c.setStrokeColorRGB(0.8, 0.8, 0.8)  # Cinza claro
+        c.line(ponto2[0], altura + 1.5 * 28.35, linha_vertical,
+               altura + 1.5 * 28.35)
+
+        # Escrever o texto "Nome Gen's Diagnóstica" em negrito e cor verde
+        texto = "Gen's Diagnóstica"
+        largura_texto = c.stringWidth(texto, "Helvetica-Bold", 14)  # Obter a largura do texto em pontos
+
+        escrever_texto(c, texto=texto,
+                       x=((linha - 40 + linha_vertical - largura_texto) / 2),
+                       y=(altura + 2.25 * 28.35), font="Helvetica-Bold", font_size=18,
+                       color=(0, 0.5, 0))
+
+        c.setFont("Helvetica", 9)
+        texto_laboratorio = "Laboratório de análises clínicas"
+        largura_texto_laboratorio = c.stringWidth(texto_laboratorio)  # Obter a largura do texto em pontos
+
+        escrever_texto(c, texto=texto_laboratorio,
+                       x=((linha + linha_vertical - largura_texto_laboratorio) / 2),
+                       y=(altura + 1.5 * 28.35 + 10), font_size=9,
+                       color=(0, 0.7, 0.3))
+
+        endereco = "Rua Fortunato Silva, Nº164, Pedra Branca/CE"
+        largura_endereco = c.stringWidth(endereco)
+
+        escrever_texto(c, texto=endereco,
+                       x=((linha - 16 + linha_vertical - largura_endereco) / 2),
+                       y=(altura + 1.5 * 28.35 - 3), font_size=10,
+                       color=(0, 0, 0))
+
+        telefone = "Tel: (88) 9 9995 0037 / 3515 1822"
+        largura_telefone = c.stringWidth(telefone)
+
+        escrever_texto(c, texto=telefone,
+                       x=((linha - 5 + linha_vertical - largura_telefone) / 2),
+                       y=(altura + 1.5 * 28.35 - 18), font_size=10,
+                       color=(0, 0, 0))
+
+        site = "gensdiagnostica.com.br"
+        largura_site = c.stringWidth(site)
+
+        escrever_texto(c, texto=site,
+                       x=((linha - 5 + linha_vertical - largura_site) / 2),
+                       y=(altura + 1.5 * 28.35 - 33), font_size=10,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Nº {exame.codigo}',
+                       x=(linha_vertical + 5),
+                       y=(altura + 57), font_size=11,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Emissão: {exame.data_alterado.strftime("%d/%m/%Y")}',
+                       x=linha_vertical + 5,
+                       y=(altura + 18), font_size=11,
+                       color=(0, 0, 0))
+
+        # Escrever o nome 'CPF'
+        cpf_1 = 'Não cadastrado'
+        if atendimento.paciente.cpf:
+            cpf_1 = atendimento.paciente.cpf
+
+        escrever_texto(c, texto=f'CPF: {cpf_1}',
+                       x=ponto1[0] + 5,
+                       y=(altura1 + 35), font_size=10,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Material: {exame.material}',
+                       x=ponto1[0] + 5,
+                       y=(altura1 + 15), font_size=8,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Data de Nascimento: {atendimento.paciente.data_nascimento}',
+                       x=ponto1[0] + 370,
+                       y=(altura1 + 55), font_size=10,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Nome: {atendimento.paciente}',
+                       x=ponto1[0] + 5,
+                       y=(altura1 + 55), font_size=10,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Número do exame: {exame.codigo}',
+                       x=ponto1[0] + 370,
+                       y=(altura1 + 35), font_size=10,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'Método: {exame.metodo[:23]}',
+                       x=ponto1[0] + 370,
+                       y=(altura1 + 15), font_size=8,
+                       color=(0, 0, 0))
+
+        # Adicionar a imagem entre as linhas horizontais superior e de 3cm
+        imagem = "https://gensdiagnostica.com.br/static/img/gens.png"  # Caminho para a imagem
+        largura_imagem = 140  # Largura da imagem em pontos
+        altura_imagem = 80  # Altura da imagem em pontos
+        c.drawImage(imagem, ponto1[0] + 1, altura + 1, width=largura_imagem, height=altura_imagem)
+
+        distancia = altura1
+
+        escrever_texto(c, texto=f'{exame.nome}',
+                       x=ponto1[0] + 5,
+                       y=(altura1 - 15), font_size=10,
+                       color=(0, 0, 0))
+
+        distancia -= 15
+
+        referencias = exame.referencias.all()
+        # Calcula o maior tamanho entre os nomes de referência
+        try:
+            maior_tamanho = max(len(ref.nome_referencia) for ref in referencias)
+            maior_tamanho = 29
+        except:
+            referencias1 = ReferenciaExame.objects.filter(exame=exame).first()
+
+
+        escrever_texto(c, texto=f'REFERENCIAS',
+                       x=ponto1[0] + 5,
+                       y=(distancia - 20), font_size=9,
+                       color=(0, 0, 0))
+
+        escrever_texto(c, texto=f'VALORES DE REFERÊNCIA',
+                       x=ponto1[0] + 270,
+                       y=(distancia - 20), font_size=9,
+                       color=(0, 0, 0))
+
+        distancia -= 20
+
+        for referencia in referencias:
+            if not referencia.fator and not referencia.esperado:
+                nome = referencia.nome_referencia[:29]
+                fator = referencia.valor_obtido
+                max_min = f'{referencia.limite_inferior} a {referencia.limite_superior}'
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + fator
+
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+                escrever_texto(c, texto=max_min,
+                               x=ponto1[0] + 270,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+                distancia -= 13
+
+            elif referencia.fator and not referencia.esperado:
+                nome = referencia.nome_referencia[:29]
+                fator = referencia.valor_obtido
+
+                fatores = referencia.fatores.all()
+                max_min = ''
+                for fat in fatores:
+                    max_min += f'{fat.nome_fator}: {fat.limite_inferior} a {fat.limite_superior} | '
+                # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + fator
+                if len(max_min) < 60:
+                    escrever_texto(c, texto=nome_formatado,
+                                   x=ponto1[0] + 5,
+                                   y=(distancia - 13), font_size=8,
+                                   color=(0, 0, 0), font="Courier")
+
+                    escrever_texto(c, texto=max_min[:-2],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                elif len(max_min) > 60 and len(max_min) <= 120:
+                    escrever_texto(c, texto=max_min[:61],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    escrever_texto(c, texto=nome_formatado,
+                                   x=ponto1[0] + 5,
+                                   y=(distancia - 13), font_size=8,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=max_min[61:-2],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+
+                elif len(max_min) > 120:
+                    escrever_texto(c, texto=max_min[:61],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    escrever_texto(c, texto=nome_formatado,
+                                   x=ponto1[0] + 5,
+                                   y=(distancia - 13), font_size=8,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=max_min[61:121],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=max_min[121:-2],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                distancia -= 13
+
+            elif not referencia.fator and referencia.esperado:
+                nome = referencia.nome_referencia[:29]
+
+                val_esp = referencia.padrao.all()
+                ref_esp = ''
+                esp_val = ''
+                val = 160
+
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': '
+
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+
+                for esperado in val_esp:
+                    ref_esp += f'{esperado.tipo_valor}: {esperado.valor_esperado}'
+
+                    escrever_texto(c, texto=esperado.esperado_obtido,
+                                   x=ponto1[0] + val,
+                                   y=(distancia - 13), font_size=8,
+                                   color=(0, 0, 0), font="Courier")
+
+                    val += 50
+
+                # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+
+                if len(ref_esp) <= 60:
+                    escrever_texto(c, texto=ref_esp,
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+
+                elif len(ref_esp) > 60 and len(ref_esp) <= 120:
+                    escrever_texto(c, texto=ref_esp[:61],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=ref_esp[61:120],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                elif len(ref_esp) > 120:
+                    escrever_texto(c, texto=ref_esp[:61],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=ref_esp[61:120],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+                    distancia -= 13
+
+                    escrever_texto(c, texto=ref_esp[121:],
+                                   x=ponto1[0] + 270,
+                                   y=(distancia - 13), font_size=7,
+                                   color=(0, 0, 0), font="Courier")
+
+            elif referencia.fator and referencia.esperado:
+                fatores = referencia.fatores.all()
+                esperados = referencia.padrao.all()
+                nome = referencia.nome_referencia[:29]
+                esperados_ref = ''
+                esperados_valor = ''
+                for espere in esperados:
+                    esperados_ref += f'{espere.tipo_valor}: {espere.valor_esperado}'
+                    esperados_valor += f'{espere.esperado_obtido}'
+
+                max_min = ''
+                for fat in fatores:
+                    max_min += f'{fat.nome_fator}: {fat.limite_inferior} a {fat.limite_superior}'
+            # Preenche com pontos até o maior tamanho e adiciona os dois-pontos
+                nome_formatado = nome.ljust(maior_tamanho, '.') + ': ' + referencia.valor_obtido
+
+                escrever_texto(c, texto=nome_formatado,
+                               x=ponto1[0] + 5,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+                escrever_texto(c, texto=esperados_valor,
+                               x=ponto1[0] + 150,
+                               y=(distancia - 13), font_size=8,
+                               color=(0, 0, 0), font="Courier")
+
+
+                escrever_texto(c, texto=f'{max_min}',
+                               x=ponto1[0] + 270,
+                               y=(distancia - 13), font_size=7,
+                               color=(0, 0, 0), font="Courier")
+
+                escrever_texto(c, texto=f'{esperados_ref}',
+                               x=ponto1[0] +380,
+                               y=(distancia - 13), font_size=7,
+                               color=(0, 0, 0), font="Courier")
+
+            distancia -= 13
+
+    distancia -= 10
+
+    escrever_texto(c, texto=f'Observações:',
+                   x=ponto1[0] + 5,
+                   y=(distancia - 15), font_size=7,
+                   color=(0, 0, 0), font="Courier")
+
+    distancia -= 15
+
+    comentario = exame.comentario or ''
+    max_largura = 500
+    largura_caractere = 4.2  # aproximação para Courier 7pt
+    max_caracteres = int(max_largura / largura_caractere)
+
+    linhas = textwrap.wrap(f'{comentario}', width=max_caracteres)
+
+    for linha in linhas:
+        escrever_texto(c, texto=linha,
+                       x=ponto1[0] + 10,
+                       y=(distancia - 15), font_size=7,
+                       color=(0, 0, 0), font="Courier")
+        distancia -= 10
+
+    imagem_url = request.build_absolute_uri(exame.bio_medico.assinatura.url)
+
+    # Baixar a imagem
+    response_imagem = requests.get(imagem_url)
+    if response_imagem.status_code == 200:
+        imagem_bytes = response_imagem.content
         imagem_reader = ImageReader(BytesIO(imagem_bytes))
-        largura_imagem = 128
-        altura_imagem = 112
-        posicao_horizontal_central = ((19 * 28.35) - largura_imagem) / 2
-        c.drawImage(imagem_reader, posicao_horizontal_central, linha_inferior + 20, width=largura_imagem,
-                    height=altura_imagem)
 
-        c.save()
-        return response
+        largura_imagem = 120
+        altura_imagem = 100
 
+        # Calcular posição da assinatura
+        y_assinatura = ponto4[0] + 10
+        x_assinatura = ponto4[0] + ((ponto3[0] - ponto4[0]) - largura_imagem) / 2
+
+        # Inserir imagem no PDF
+        c.drawImage(imagem_reader, x_assinatura, y_assinatura, width=largura_imagem, height=altura_imagem,
+                    mask='auto')
+    else:
+        return HttpResponse('Erro ao baixar a imagem', status=500)
+
+    c.save()
+    return response
 
 
 def preencher_laudo_medico(request, pk):
@@ -2512,6 +2340,7 @@ def buscar_exame_terceirizado(request):
 
         return JsonResponse({'data': res})
     return JsonResponse({})
+
 
 def etiqueta_exame(request, pk):
     # Dimensões personalizadas (largura x altura em pontos)

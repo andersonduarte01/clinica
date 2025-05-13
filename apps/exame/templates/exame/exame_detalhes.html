@@ -54,7 +54,10 @@ Gen's | Info Exame
                     {% if referencia.fator %}
                         {% for fator_ref in referencia.fatores.all %}
                             <div class="small text-gray-500 message-time font-weight-bold">
-                               {% if fator_ref.nome_fator != None %}{{fator_ref.nome_fator}}{% elif  fator_ref.idade != None %}{{fator_ref.idade}}{% else %}Sem fator de referência{% endif %}: {{fator_ref.limite_inferior}} a {{fator_ref.limite_superior}}
+                               {% if fator_ref.nome_fator != None %}{{fator_ref.nome_fator}}{% elif  fator_ref.idade != None %}
+                                {{fator_ref.idade}}{% else %}Sem fator de referência{% endif %}:
+                                {% if  fator_ref.limite_inferior %}{{fator_ref.limite_inferior}} a {{fator_ref.limite_superior}}
+                                {% else %}{{fator_ref.limite_superior}}{% endif %}
                            </div>
                         {% endfor %}
                     {% endif %}

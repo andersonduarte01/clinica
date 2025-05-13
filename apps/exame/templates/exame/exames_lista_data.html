@@ -75,41 +75,53 @@ Gen's | Exames Aguardando
                   <i class="bi bi-file-pdf"></i>
                 </a>
               </td>
-<!--              {% if user.usuario.adm %}-->
-<!--              <td class="text-center">-->
-<!--                <a href="{% url 'exame:exame_detail' pk=exame.pk %}" class="text-success">-->
-<!--                  <i class="bi bi-box-arrow-in-right"></i>-->
-<!--                </a>-->
-<!--                &lt;!&ndash; Button trigger modal &ndash;&gt;-->
-<!--<a href="#" class="text-danger" data-toggle="modal" data-target="#exampleModalCenter{{exame.pk}}">-->
-<!--  <i class="bi bi-trash"></i>-->
-<!--</a>-->
+            </tr>
+          {% empty %}
+          <p class="text-danger">Sem exames...</p>
+          {% endfor %}
+          <tr>
+            <td class="text-success text-uppercase font-weight-bold">Terceirizados</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          {% for exame in terceirizados %}
+          <tr>
+              <td>{{exame.codigo}}</td>
+              <td>{{exame}}</td>
+              <td class="text-center">
+                {{exame.status_exame}}
+              </td>
+              <td class="text-center">
+                {% if exame.terceirizado %}
+                <a href="#" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-asterisk"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'exame:exame_medico_ver' pk=exame.pk %}" class="text-decoration-none text-primary font-weight-bold">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if exame.terceirizado %}
+                <a href="#" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-asterisk"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'exame:preencher_pdf' pk=exame.pk %}" class="text-decoration-none text-danger font-weight-bold">
+                  <i class="bi bi-file-pdf"></i>
+                </a>
+                {% endif %}
 
-<!--&lt;!&ndash; Modal &ndash;&gt;-->
-<!--<div class="modal fade" id="exampleModalCenter{{exame.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle{{exame.pk}}" aria-hidden="true">-->
-<!--  <div class="modal-dialog modal-dialog-centered" role="document">-->
-<!--    <div class="modal-content">-->
-<!--      <div class="modal-header">-->
-<!--        <h5 class="modal-title text-uppercase text-success font-weight-bold" id="exampleModalLongTitle{{exame.pk}}">{{exame}}</h5>-->
-<!--        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--          <span aria-hidden="true">&times;</span>-->
-<!--        </button>-->
-<!--      </div>-->
-<!--      <div class="modal-body">-->
-<!--        <p>Deseja excluir <span class="text-danger">{{exame}}</span> definitivamente?</p>-->
-<!--      </div>-->
-<!--      <div class="modal-footer">-->
-<!--        <form method="post" action="{% url 'exame:exame_del' pk=exame.pk %}">-->
-<!--          {% csrf_token %}-->
-<!--          <button type="button" class="btn btn-success" data-dismiss="modal">Sair</button>-->
-<!--          <button type="submit" class="btn btn-danger">Excluir</button>-->
-<!--        </form>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
-<!--              </td>-->
-<!--              {% endif %}-->
+              </td>
+              <td class="text-center">
+                <a href="{% url 'exame:etiqueta_exame' pk=exame.pk %}" class="text-decoration-none text-success font-weight-bold">
+                  <i class="bi bi-file-pdf"></i>
+                </a>
+              </td>
             </tr>
           {% empty %}
           <p class="text-danger">Sem exames...</p>
