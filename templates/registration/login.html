@@ -1,62 +1,300 @@
 <!DOCTYPE html>
 {% load static %}
-{% load bootstrap4 %}
-<html lang="pt-br">
-
+<html lang="pt-br" data-theme="emerald">
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Gen's | Entrar{% endblock %}</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        html, body { height: 100%; margin: 0; }
 
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-  <link href="img/logo/logo.png" rel="icon">
-  <title>{% block titulo %}Gen's | Diagnóstica{% endblock %}</title>
-  <link href="{% static 'alt/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
-  <link href="{% static 'alt/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
-  <link href="{% static 'alt/css/ruang-admin.min.css' %}" rel="stylesheet">
+        /* Círculos decorativos do painel esquerdo */
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
 
+        /* Campos Django estilizados */
+        .dj-input {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            color: #1f2937;
+            background: #f9fafb;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.625rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            outline: none;
+        }
+        .dj-input:focus {
+            background: #ffffff;
+            border-color: oklch(var(--p));
+            box-shadow: 0 0 0 3px oklch(var(--p) / 0.15);
+        }
+        .dj-input.is-error {
+            border-color: oklch(var(--er));
+            box-shadow: 0 0 0 3px oklch(var(--er) / 0.12);
+        }
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+        .input-wrap:focus-within .input-icon { color: oklch(var(--p)); }
+
+        /* Eye toggle */
+        .eye-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1rem;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .eye-toggle:hover { color: oklch(var(--p)); }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .anim-left  { animation: slideInLeft  0.6s ease both; }
+        .anim-right { animation: slideInRight 0.6s ease both 0.1s; }
+    </style>
 </head>
 
-<body class="bg-gradient-login">
-  <!-- Login Content -->
-  <div class="container-login">
-    <div class="row justify-content-center">
-      <div class="col-xl-6 col-lg-12 col-md-9">
-        <div class="card shadow-sm my-5">
-          <div class="card-body p-0">
-            <div class="row">
-              <div class="col-lg-12">
-                <div class="login-form">
-                  <div class="text-center">
-                    <h1 class="h4 text-gray-900 mb-4">Login</h1>
-                  </div>
-                  <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {% bootstrap_form form %}
-                    <div class="form-group">
-                      <button type="submit" class="btn btn-success btn-block">Login</button>
-                    </div>
-                    <hr>
-                  </form>
-                  <div class="text-center">
-                    <a class="font-weight-bold small" href="#">Esqueci a Senha</a>
-                  </div>
-                  <div class="text-center">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Login Content -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-  <script src="js/ruang-admin.min.js"></script>
-</body>
+<body class="min-h-screen bg-base-200 flex items-center justify-center p-4 lg:p-0">
 
+    <div class="w-full min-h-screen lg:flex lg:max-w-none max-w-md lg:max-w-none shadow-2xl rounded-2xl lg:rounded-none overflow-hidden">
+
+        <!-- ===================================================
+             PAINEL ESQUERDO — Identidade visual / Branding
+             =================================================== -->
+        <aside class="hidden lg:flex lg:w-5/12 xl:w-2/5 relative bg-gradient-to-br from-emerald-900 via-emerald-700 to-teal-600 flex-col justify-between p-12 overflow-hidden anim-left">
+
+            <!-- Círculos decorativos -->
+            <span class="deco-circle w-72 h-72 -top-16 -left-16"></span>
+            <span class="deco-circle w-48 h-48 top-32 right-4"></span>
+            <span class="deco-circle w-96 h-96 -bottom-24 -right-24"></span>
+            <span class="deco-circle w-28 h-28 bottom-40 left-6"></span>
+
+            <!-- Logo + Nome -->
+            <div class="relative z-10">
+                <a href="{% url 'home:indice' %}" class="flex items-center gap-3 mb-14">
+                    <img src="{% static 'img/logo/logo.png' %}" alt="Gen's Diagnóstica"
+                         class="h-12 object-contain brightness-0 invert">
+                    <div>
+                        <div class="text-white font-extrabold text-xl leading-tight">Gen's</div>
+                        <div class="text-emerald-200 text-xs tracking-widest uppercase">Diagnóstica</div>
+                    </div>
+                </a>
+
+                <h2 class="text-white text-3xl font-extrabold leading-tight mb-4">
+                    Bem-vindo ao<br>
+                    <span class="text-emerald-300">Painel Clínico</span>
+                </h2>
+                <p class="text-white/70 text-sm leading-relaxed max-w-xs">
+                    Acesse o sistema de gestão laboratorial da Gen's Diagnóstica com segurança e praticidade.
+                </p>
+            </div>
+
+            <!-- Lista de diferenciais -->
+            <ul class="relative z-10 space-y-4 my-10">
+                <li class="flex items-center gap-3 text-white/90 text-sm">
+                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-people text-emerald-200"></i>
+                    </div>
+                    Gestão completa de pacientes
+                </li>
+                <li class="flex items-center gap-3 text-white/90 text-sm">
+                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-clipboard2-pulse text-emerald-200"></i>
+                    </div>
+                    Controle de exames e laudos
+                </li>
+                <li class="flex items-center gap-3 text-white/90 text-sm">
+                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-calendar3 text-emerald-200"></i>
+                    </div>
+                    Agenda e fila de atendimento
+                </li>
+                <li class="flex items-center gap-3 text-white/90 text-sm">
+                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-bar-chart-line text-emerald-200"></i>
+                    </div>
+                    Relatórios financeiros e diários
+                </li>
+            </ul>
+
+            <!-- Rodapé do painel esquerdo -->
+            <div class="relative z-10 text-white/40 text-xs">
+                &copy; 2024 Gen's Diagnóstica &bull; Todos os direitos reservados
+            </div>
+        </aside>
+
+        <!-- ===================================================
+             PAINEL DIREITO — Formulário de login
+             =================================================== -->
+        <main class="flex-1 bg-white flex flex-col justify-center px-6 py-10 sm:px-12 md:px-16 lg:px-20 xl:px-28 anim-right">
+
+            <!-- Mobile: logo compacto -->
+            <div class="lg:hidden flex items-center gap-3 mb-10">
+                <img src="{% static 'img/logo/logo.png' %}" alt="Gen's" class="h-9 object-contain">
+                <span class="font-extrabold text-primary text-lg">Gen's Diagnóstica</span>
+            </div>
+
+            <div class="w-full max-w-md mx-auto">
+
+                <!-- Título -->
+                <div class="mb-10">
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Entrar</h1>
+                    <p class="text-gray-500 text-sm">Informe suas credenciais para acessar o painel.</p>
+                </div>
+
+                <!-- Erros globais do formulário -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-error shadow-sm mb-6 py-3">
+                    <i class="bi bi-exclamation-triangle-fill text-lg flex-shrink-0"></i>
+                    <div>
+                        {% for error in form.non_field_errors %}
+                        <p class="text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Mensagens Django -->
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow-sm mb-4 py-3">
+                    <i class="bi bi-info-circle flex-shrink-0"></i>
+                    <span class="text-sm">{{ message }}</span>
+                </div>
+                {% endfor %}
+
+                <!-- FORMULÁRIO -->
+                <form method="post" novalidate class="space-y-5">
+                    {% csrf_token %}
+
+                    <!-- Campo: Usuário -->
+                    <div>
+                        <label for="id_username" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Usuário
+                        </label>
+                        <div class="input-wrap relative">
+                            <i class="bi bi-person input-icon"></i>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="mt-1.5 flex items-center gap-1 text-error text-xs">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                {% for error in form.username.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Campo: Senha -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="id_password" class="block text-sm font-semibold text-gray-700">
+                                Senha
+                            </label>
+                            <a href="#" class="text-xs text-primary hover:underline font-medium">
+                                Esqueci a senha
+                            </a>
+                        </div>
+                        <div class="input-wrap relative">
+                            <i class="bi bi-lock input-icon"></i>
+                            {{ form.password }}
+                            <button type="button" class="eye-toggle" id="toggle-pwd" aria-label="Mostrar senha">
+                                <i class="bi bi-eye" id="eye-icon"></i>
+                            </button>
+                            {% if form.password.errors %}
+                            <div class="mt-1.5 flex items-center gap-1 text-error text-xs">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                {% for error in form.password.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Lembrar-me -->
+                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" name="remember" class="checkbox checkbox-primary checkbox-sm" />
+                        <span class="text-sm text-gray-600">Lembrar neste dispositivo</span>
+                    </label>
+
+                    <!-- Botão de submit -->
+                    <button type="submit" class="btn btn-primary w-full gap-2 text-base h-12 mt-1">
+                        <i class="bi bi-box-arrow-in-right text-lg"></i>
+                        Entrar
+                    </button>
+                </form>
+
+                <!-- Divider + voltar -->
+                <div class="divider text-xs text-gray-300 my-7">ou</div>
+
+                <a href="{% url 'home:indice' %}" class="btn btn-ghost btn-outline w-full gap-2 border-gray-200 text-gray-600 hover:border-primary hover:text-primary">
+                    <i class="bi bi-arrow-left"></i>
+                    Voltar ao site
+                </a>
+
+                <!-- Rodapé mobile -->
+                <p class="text-center text-xs text-gray-400 mt-8 lg:hidden">
+                    &copy; 2024 Gen's Diagnóstica &bull; Todos os direitos reservados
+                </p>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // Aplica a classe dj-input e erros nos campos renderizados pelo Django
+        document.addEventListener('DOMContentLoaded', () => {
+            const fields = document.querySelectorAll('#id_username, #id_password');
+            fields.forEach(field => {
+                field.classList.add('dj-input');
+                // Marca campo com erro se existir mensagem de erro logo após ele
+                const wrap = field.closest('.input-wrap');
+                if (wrap && wrap.querySelector('.text-error')) {
+                    field.classList.add('is-error');
+                }
+            });
+
+            // Toggle visibilidade da senha
+            const toggleBtn = document.getElementById('toggle-pwd');
+            const pwdField  = document.getElementById('id_password');
+            const eyeIcon   = document.getElementById('eye-icon');
+            if (toggleBtn && pwdField) {
+                toggleBtn.addEventListener('click', () => {
+                    const isPassword = pwdField.type === 'password';
+                    pwdField.type    = isPassword ? 'text' : 'password';
+                    eyeIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+                });
+            }
+        });
+    </script>
+
+</body>
 </html>

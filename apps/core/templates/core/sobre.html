@@ -1,46 +1,172 @@
 {% extends 'padrao/base.html' %}
 {% load static %}
+
+{% block titulo %}Gen's Diagnóstica | Sobre nós{% endblock %}
+
 {% block estilo %}
 <style>
-.slider-area2 {
-    /* background-image: url(../img/hero/hero2.png); */
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
-.slider-area {
-    position: relative;
-    background-image: url({% static 'img/hero/h1_hero3.png' %});
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
+    .page-hero-bg {
+        background-image: linear-gradient(135deg, rgba(6,78,59,0.90) 0%, rgba(16,185,129,0.75) 100%),
+                          url("{% static 'img/hero/h1_hero3.png' %}");
+        background-size: cover;
+        background-position: center;
+    }
 </style>
 {% endblock %}
-{% block conteudo %}
-<!--? Slider Area Start-->
 
-<div class="slider-area slider-area2">
-            <div class="slider-active dot-style">
-                <!-- Slider Single -->
-                <div class="single-slider  d-flex align-items-center slider-height2">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-7 col-lg-8 col-md-10 ">
-                             <div class="hero-wrapper">
-                                <div class="hero__caption">
-                                    <h1 data-animation="fadeInUp" data-delay=".3s">Sobre nós</h1>
-                                    <p data-animation="fadeInUp" data-delay=".6s">
-                                        "Conheça nossa história, confie em nosso compromisso."
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+{% block conteudo %}
+
+<!-- PAGE HERO -->
+<section class="page-hero-bg py-28 flex items-center">
+    <div class="max-w-7xl mx-auto px-6 w-full">
+        <div class="text-white max-w-xl">
+            <div class="text-sm uppercase tracking-widest text-white/60 mb-3 flex items-center gap-2">
+                <a href="{% url 'home:indice' %}" class="hover:text-white transition-colors">Início</a>
+                <i class="bi bi-chevron-right text-xs"></i>
+                <span>Sobre nós</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">Sobre nós</h1>
+            <p class="text-white/75 text-lg leading-relaxed">
+                "Conheça nossa história, confie em nosso compromisso."
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- MISSION / VISION / VALUES -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-3">
+                <span class="w-8 h-0.5 bg-primary"></span> Nossos pilares <span class="w-8 h-0.5 bg-primary"></span>
+            </span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-base-content">O que nos guia</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card bg-primary text-primary-content shadow-lg shadow-primary/20">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-5">
+                        <i class="bi bi-bullseye text-3xl"></i>
                     </div>
+                    <h3 class="card-title text-xl mb-3">Missão</h3>
+                    <p class="text-primary-content/80 text-sm leading-relaxed">
+                        Oferecer serviços de análises clínicas com excelência, precisão e humanização,
+                        contribuindo para a saúde e bem-estar de cada paciente.
+                    </p>
+                </div>
+            </div>
+            <div class="card bg-base-100 border border-base-200 shadow-md hover:shadow-lg transition-shadow">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-5">
+                        <i class="bi bi-eye text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="card-title text-xl mb-3 text-base-content">Visão</h3>
+                    <p class="text-base-content/60 text-sm leading-relaxed">
+                        Ser referência regional em diagnósticos laboratoriais, reconhecida pela qualidade
+                        dos resultados e pelo atendimento diferenciado.
+                    </p>
+                </div>
+            </div>
+            <div class="card bg-base-100 border border-base-200 shadow-md hover:shadow-lg transition-shadow">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-5">
+                        <i class="bi bi-gem text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="card-title text-xl mb-3 text-base-content">Valores</h3>
+                    <p class="text-base-content/60 text-sm leading-relaxed">
+                        Ética, transparência, comprometimento com a precisão e respeito ao paciente
+                        como pilar de todas as nossas ações.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-<!-- Slider Area End -->
+<!-- ABOUT STORY -->
+<section class="py-20 bg-base-200">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+                <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-4">
+                    <span class="w-8 h-0.5 bg-primary"></span> Nossa história
+                </span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-base-content leading-tight mb-6">
+                    Uma trajetória de <span class="text-primary">cuidado</span> e excelência
+                </h2>
+                <div class="space-y-4 text-base-content/70 leading-relaxed">
+                    <p>
+                        A Gen's Diagnóstica nasceu do desejo de transformar a experiência laboratorial
+                        no Brasil. Fundada há mais de uma década, nossa trajetória é marcada pela busca
+                        contínua pela excelência e pela inovação.
+                    </p>
+                    <p>
+                        Investimos constantemente em tecnologia de ponta e na capacitação de nossa equipe,
+                        garantindo que cada exame realizado seja um passo rumo a um diagnóstico seguro
+                        e confiável.
+                    </p>
+                    <p>
+                        Mais de 5.000 pacientes já confiam em nosso trabalho. Cada resultado entregue
+                        carrega nossa responsabilidade e comprometimento com a vida.
+                    </p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="card bg-primary text-primary-content p-6 rounded-2xl">
+                    <div class="text-4xl font-extrabold mb-1">10+</div>
+                    <div class="text-sm text-primary-content/80">Anos no mercado</div>
+                </div>
+                <div class="card bg-base-100 border border-base-300 p-6 rounded-2xl">
+                    <div class="text-4xl font-extrabold text-primary mb-1">5k+</div>
+                    <div class="text-sm text-base-content/60">Pacientes atendidos</div>
+                </div>
+                <div class="card bg-base-100 border border-base-300 p-6 rounded-2xl">
+                    <div class="text-4xl font-extrabold text-primary mb-1">200+</div>
+                    <div class="text-sm text-base-content/60">Tipos de exames</div>
+                </div>
+                <div class="card bg-base-100 border border-base-300 p-6 rounded-2xl">
+                    <div class="text-4xl font-extrabold text-primary mb-1">98%</div>
+                    <div class="text-sm text-base-content/60">Satisfação</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TEAM -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-3">
+                <span class="w-8 h-0.5 bg-primary"></span> Nossa equipe <span class="w-8 h-0.5 bg-primary"></span>
+            </span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-base-content">Profissionais dedicados à sua saúde</h2>
+        </div>
+        <div class="flex justify-center">
+            <div class="max-w-xl text-center text-base-content/60 leading-relaxed">
+                <p>
+                    Nossa equipe é composta por biomédicos, farmacêuticos e técnicos de laboratório
+                    altamente qualificados, comprometidos com a precisão e o atendimento humanizado
+                    em cada etapa do processo.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-16 bg-base-200">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-gradient-to-r from-primary to-emerald-600 rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl shadow-primary/20">
+            <div class="text-white">
+                <h2 class="text-2xl md:text-3xl font-extrabold mb-3">Pronto para cuidar da sua saúde?</h2>
+                <p class="text-white/80 max-w-lg">Agende seus exames conosco e receba resultados confiáveis com agilidade.</p>
+            </div>
+            <a href="{% url 'home:contato' %}" class="btn bg-white text-primary hover:bg-white/90 border-none btn-lg whitespace-nowrap shadow-lg gap-2 flex-shrink-0">
+                <i class="bi bi-calendar2-check"></i> Agendar Agora
+            </a>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

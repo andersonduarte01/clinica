@@ -1,150 +1,255 @@
 {% extends 'padrao/base.html' %}
 {% load static %}
+
+{% block titulo %}Gen's Diagnóstica | Laboratório Clínico{% endblock %}
+
 {% block estilo %}
 <style>
-.slider-area2 {
-    /* background-image: url(../img/hero/hero2.png); */
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
-.slider-area {
-    position: relative;
-    background-image: url({% static 'img/hero/h1_hero3.png' %});
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
+    .hero-bg {
+        background-image: linear-gradient(135deg, rgba(6,78,59,0.92) 0%, rgba(16,185,129,0.80) 100%),
+                          url("{% static 'img/hero/h1_hero3.png' %}");
+        background-size: cover;
+        background-position: center;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(2rem); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-fade-up { animation: fadeInUp 0.8s ease both; }
+    .anim-delay-1 { animation-delay: 0.15s; }
+    .anim-delay-2 { animation-delay: 0.35s; }
+    .anim-delay-3 { animation-delay: 0.55s; }
 </style>
 {% endblock %}
+
 {% block conteudo %}
-<div class="slider-area slider-area2">
-            <div class="slider-active dot-style">
-                <!-- Slider Single -->
-                <div class="single-slider  d-flex align-items-center slider-height2">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-7 col-lg-8 col-md-10 ">
-                             <div class="hero-wrapper">
-                                <div class="hero__caption">
-                                    <h1 data-animation="fadeInUp" data-delay=".3s">Cuide da sua saúde</h1>
-                                    <p data-animation="fadeInUp" data-delay=".6s">Seu laboratório de análises clínicas
-                                        <br>  de excelência.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+<!-- ======================================================
+     HERO
+     ====================================================== -->
+<section class="hero-bg min-h-[88vh] flex items-center">
+    <div class="max-w-7xl mx-auto px-6 py-24 w-full">
+        <div class="max-w-2xl">
+            <div class="badge badge-success badge-outline text-white border-white/40 mb-6 anim-fade-up">
+                <i class="bi bi-check2-circle mr-1.5"></i> Laboratório certificado
+            </div>
+            <h1 class="text-4xl md:text-5xl xl:text-6xl font-extrabold text-white leading-tight mb-6 anim-fade-up anim-delay-1">
+                Cuide da sua <br>
+                <span class="text-emerald-300">saúde</span> com quem<br>
+                entende de você.
+            </h1>
+            <p class="text-white/80 text-lg md:text-xl leading-relaxed mb-10 max-w-xl anim-fade-up anim-delay-2">
+                Exames clínicos precisos e confiáveis com tecnologia de ponta e atendimento humanizado.
+            </p>
+            <div class="flex flex-wrap gap-4 anim-fade-up anim-delay-3">
+                <a href="{% url 'home:servicos' %}" class="btn btn-primary btn-lg gap-2 shadow-lg shadow-primary/30">
+                    <i class="bi bi-clipboard2-pulse"></i> Nossos Serviços
+                </a>
+                <a href="{% url 'home:contato' %}" class="btn btn-outline border-white text-white hover:bg-white hover:text-primary btn-lg gap-2">
+                    <i class="bi bi-telephone"></i> Fale Conosco
+                </a>
             </div>
         </div>
     </div>
+</section>
 
-<div class="about-area2 section-padding40">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-7 col-md-12">
-                <!-- about-img -->
-                <div class="about-img ">
-                    <img src="{% static 'img/gallery/about.png' %}" alt="">
+<!-- ======================================================
+     NÚMEROS / DIFERENCIAIS
+     ====================================================== -->
+<section class="bg-primary py-10">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="stats stats-vertical sm:stats-horizontal w-full bg-transparent shadow-none text-white">
+            <div class="stat px-8">
+                <div class="stat-figure opacity-60"><i class="bi bi-people text-4xl"></i></div>
+                <div class="stat-title text-white/70 text-sm">Pacientes atendidos</div>
+                <div class="stat-value text-white">+5.000</div>
+                <div class="stat-desc text-white/60">e crescendo</div>
+            </div>
+            <div class="stat px-8">
+                <div class="stat-figure opacity-60"><i class="bi bi-clipboard2-pulse text-4xl"></i></div>
+                <div class="stat-title text-white/70 text-sm">Tipos de exames</div>
+                <div class="stat-value text-white">+200</div>
+                <div class="stat-desc text-white/60">análises disponíveis</div>
+            </div>
+            <div class="stat px-8">
+                <div class="stat-figure opacity-60"><i class="bi bi-award text-4xl"></i></div>
+                <div class="stat-title text-white/70 text-sm">Anos de experiência</div>
+                <div class="stat-value text-white">10+</div>
+                <div class="stat-desc text-white/60">de excelência</div>
+            </div>
+            <div class="stat px-8">
+                <div class="stat-figure opacity-60"><i class="bi bi-star text-4xl"></i></div>
+                <div class="stat-title text-white/70 text-sm">Satisfação</div>
+                <div class="stat-value text-white">98%</div>
+                <div class="stat-desc text-white/60">dos nossos pacientes</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================
+     SOBRE / ABOUT
+     ====================================================== -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+
+            <!-- Imagem -->
+            <div class="relative">
+                <div class="absolute -top-4 -left-4 w-full h-full bg-primary/10 rounded-3xl"></div>
+                <img src="{% static 'img/gallery/about.png' %}" alt="Sobre a Gen's Diagnóstica"
+                     class="relative z-10 w-full rounded-3xl object-cover shadow-xl max-h-[480px]">
+                <div class="absolute -bottom-6 -right-6 bg-primary text-white rounded-2xl p-5 shadow-lg z-20 hidden md:block">
+                    <div class="text-3xl font-extrabold">10+</div>
+                    <div class="text-sm font-medium opacity-90">Anos de experiência</div>
                 </div>
             </div>
-            <div class="col-lg-5 col-md-12">
-                <div class="about-caption">
-                    <p class="pera-top mb-40">Bem vindo à Gen's Diagnóstica!</p>
-                    <p class="pera-bottom mb-20">
-                        Estamos comprometidos em colocar sua saúde em primeiro lugar.
-                        Com anos de experiência e uma equipe dedicada de profissionais,
-                        oferecemos uma ampla gama de serviços de análises clínicas para atender
-                        às suas necessidades de saúde.</p>
-                    <p class="pera-bottom mb-20">
-                        Nosso laboratório utiliza tecnologia de ponta para garantir resultados
-                        precisos e confiáveis. Desde exames de rotina até testes especializados,
-                        estamos aqui para fornecer informações valiosas que ajudam você a entender
-                        e gerenciar sua saúde de forma eficaz.
-                    </p>
-                    <p class="pera-bottom mb-20">
-                        Explore nosso site para saber mais sobre nossos serviços, equipe e valores.
-                        Estamos ansiosos para fazer parte de sua jornada de saúde e bem-estar.
-                        Entre em contato hoje mesmo e descubra como podemos ajudar você a viver uma
-                        vida mais saudável e feliz.
-                    </p>
-             </div>
-         </div>
-     </div>
- </div>
-</div>
 
-<section class="wantToWork-area section-bg3" data-background="{% static 'img/gallery/section_bg01.png' %}">
-    <div class="container">
-        <div class="wants-wrapper w-padding2">
-            <div class="row align-items-center justify-content-between">
-                <div class="col-xl-7 col-lg-9 col-md-8">
-                    <div class="wantToWork-caption wantToWork-caption2">
-                        <h2>Priorize sua Saúde</h2>
-                        <p>
-                            "Exercícios e alimentação saudável são a base; os exames
-                            clínicos são a bússola que mantém sua jornada na direção certa."
-                        </p>
-                    </div>
+            <!-- Texto -->
+            <div>
+                <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-4">
+                    <span class="w-8 h-0.5 bg-primary"></span> Quem somos
+                </span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-base-content leading-tight mb-6">
+                    Bem-vindo à<br>
+                    <span class="text-primary">Gen's Diagnóstica!</span>
+                </h2>
+                <div class="space-y-4 text-base-content/70 leading-relaxed">
+                    <p>
+                        Estamos comprometidos em colocar sua saúde em primeiro lugar. Com anos de experiência e
+                        uma equipe dedicada de profissionais, oferecemos uma ampla gama de serviços de análises
+                        clínicas para atender às suas necessidades.
+                    </p>
+                    <p>
+                        Nosso laboratório utiliza tecnologia de ponta para garantir resultados precisos e confiáveis.
+                        Desde exames de rotina até testes especializados, estamos aqui para fornecer informações
+                        valiosas que ajudam você a entender e gerenciar sua saúde de forma eficaz.
+                    </p>
+                    <p>
+                        Estamos ansiosos para fazer parte de sua jornada de saúde e bem-estar. Entre em contato
+                        hoje mesmo e descubra como podemos ajudar você a viver uma vida mais saudável e feliz.
+                    </p>
+                </div>
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <a href="{% url 'home:sobre' %}" class="btn btn-primary gap-2">
+                        <i class="bi bi-arrow-right-circle"></i> Saiba mais
+                    </a>
+                    <a href="{% url 'home:contato' %}" class="btn btn-ghost btn-outline gap-2">
+                        <i class="bi bi-telephone"></i> Contato
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<div class="service-area">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="single-cat text-center mb-50">
-                    <div class="cat-icon">
-                        <img src="{% static 'img/icon/exame1.png' %}" alt="">
-                    </div>
-                    <div class="cat-cap">
-                        <h5><a href="services.html">Exames Clinicos</a></h5>
-                        <p>
-                            Exames clínicos regulares são o alicerce de uma
-                            saúde sólida, permitindo intervenções precoces e
-                            aprimoramento do autocuidado.
-                        </p>
-
-                    </div>
-                </div>
+<!-- ======================================================
+     BANNER CTA
+     ====================================================== -->
+<section class="py-16 bg-base-200">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-gradient-to-r from-primary to-emerald-600 rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl shadow-primary/20">
+            <div class="text-white">
+                <h2 class="text-2xl md:text-3xl font-extrabold mb-3">Priorize a sua saúde</h2>
+                <p class="text-white/80 max-w-lg leading-relaxed">
+                    "Exercícios e alimentação saudável são a base; os exames clínicos são a bússola
+                    que mantém sua jornada na direção certa."
+                </p>
             </div>
-            <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="single-cat text-center mb-50">
-                    <div class="cat-icon">
-                        <img src="{% static 'img/icon/habitos.png' %}" alt="">
-                    </div>
-                    <div class="cat-cap">
-                        <h5><a href="services.html">Alimentação Saudável</a></h5>
-                        <p>
-                            A escolha por uma alimentação saudável é um investimento
-                            no bem-estar presente e futuro, promovendo saúde e
-                            prevenindo doenças.
-                        </p>
-
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-6">
-                <div class="single-cat text-center mb-50">
-                    <div class="cat-icon">
-                        <img src="{% static 'img/icon/exercicios.png' %}" alt="">
-                    </div>
-                    <div class="cat-cap">
-                        <h5><a href="services.html">Exercícios Físicos</a></h5>
-                        <p>
-                            Os exercícios físicos são a <br>
-                            chave para um corpo forte, uma<br>
-                            mente saudável e uma <br>vida equilibrada.
-                        </p>
-
-                    </div>
-                </div>
-            </div>
+            <a href="{% url 'home:contato' %}" class="btn bg-white text-primary hover:bg-white/90 border-none btn-lg whitespace-nowrap shadow-lg gap-2 flex-shrink-0">
+                <i class="bi bi-calendar2-check"></i> Agendar Exame
+            </a>
         </div>
     </div>
-</div>
+</section>
+
+<!-- ======================================================
+     SERVIÇOS / FEATURES
+     ====================================================== -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-4">
+                <span class="w-8 h-0.5 bg-primary"></span> O que oferecemos <span class="w-8 h-0.5 bg-primary"></span>
+            </span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-base-content">Nossos Principais Serviços</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <!-- Card 1 -->
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                        <img src="{% static 'img/icon/exame1.png' %}" alt="Exames Clínicos" class="w-10 h-10 object-contain group-hover:brightness-0 group-hover:invert transition-all">
+                    </div>
+                    <h3 class="card-title text-lg font-bold text-base-content mb-3">Exames Clínicos</h3>
+                    <p class="text-base-content/60 text-sm leading-relaxed">
+                        Exames clínicos regulares são o alicerce de uma saúde sólida, permitindo
+                        intervenções precoces e aprimoramento do autocuidado.
+                    </p>
+                    <div class="card-actions mt-5">
+                        <a href="{% url 'home:servicos' %}" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Saiba mais <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                        <img src="{% static 'img/icon/habitos.png' %}" alt="Alimentação Saudável" class="w-10 h-10 object-contain group-hover:brightness-0 group-hover:invert transition-all">
+                    </div>
+                    <h3 class="card-title text-lg font-bold text-base-content mb-3">Alimentação Saudável</h3>
+                    <p class="text-base-content/60 text-sm leading-relaxed">
+                        A escolha por uma alimentação saudável é um investimento no bem-estar presente
+                        e futuro, promovendo saúde e prevenindo doenças.
+                    </p>
+                    <div class="card-actions mt-5">
+                        <a href="{% url 'home:servicos' %}" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Saiba mais <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="card-body items-center text-center p-8">
+                    <div class="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                        <img src="{% static 'img/icon/exercicios.png' %}" alt="Exercícios Físicos" class="w-10 h-10 object-contain group-hover:brightness-0 group-hover:invert transition-all">
+                    </div>
+                    <h3 class="card-title text-lg font-bold text-base-content mb-3">Exercícios Físicos</h3>
+                    <p class="text-base-content/60 text-sm leading-relaxed">
+                        Os exercícios físicos são a chave para um corpo forte, uma mente saudável
+                        e uma vida equilibrada e plena.
+                    </p>
+                    <div class="card-actions mt-5">
+                        <a href="{% url 'home:servicos' %}" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Saiba mais <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ======================================================
+     TESTIMONIAL / QUOTE
+     ====================================================== -->
+<section class="py-16 bg-base-200">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+        <i class="bi bi-quote text-5xl text-primary/30 block mb-4"></i>
+        <blockquote class="text-xl md:text-2xl font-medium text-base-content/80 leading-relaxed italic mb-6">
+            A saúde é o maior presente, a contentamento a maior riqueza,
+            a fidelidade a melhor relação.
+        </blockquote>
+        <p class="text-sm text-base-content/50 font-medium uppercase tracking-widest">Gen's Diagnóstica</p>
+    </div>
+</section>
 
 {% endblock %}

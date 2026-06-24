@@ -1,43 +1,169 @@
 {% extends 'padrao/base.html' %}
 {% load static %}
+
+{% block titulo %}Gen's Diagnóstica | Contato{% endblock %}
+
 {% block estilo %}
 <style>
-.slider-area2 {
-    /* background-image: url(../img/hero/hero2.png); */
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
-.slider-area {
-    position: relative;
-    background-image: url({% static 'img/hero/h1_hero3.png' %});
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
+    .page-hero-bg {
+        background-image: linear-gradient(135deg, rgba(6,78,59,0.90) 0%, rgba(16,185,129,0.75) 100%),
+                          url("{% static 'img/hero/h1_hero3.png' %}");
+        background-size: cover;
+        background-position: center;
+    }
+    .contact-input:focus {
+        border-color: oklch(var(--p));
+        outline: none;
+        box-shadow: 0 0 0 3px oklch(var(--p) / 0.15);
+    }
 </style>
 {% endblock %}
+
 {% block conteudo %}
-<div class="slider-area slider-area2">
-            <div class="slider-active dot-style">
-                <!-- Slider Single -->
-                <div class="single-slider  d-flex align-items-center slider-height2">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-7 col-lg-8 col-md-10 ">
-                             <div class="hero-wrapper">
-                                <div class="hero__caption">
-                                    <h1 data-animation="fadeInUp" data-delay=".3s">Contato</h1>
-                                    <p data-animation="fadeInUp" data-delay=".6s">
-                                        "Estamos aqui para ouvir você. Entre em contato conosco."
-                                    </p>
-                                </div>
+
+<!-- PAGE HERO -->
+<section class="page-hero-bg py-28 flex items-center">
+    <div class="max-w-7xl mx-auto px-6 w-full">
+        <div class="text-white max-w-xl">
+            <div class="text-sm uppercase tracking-widest text-white/60 mb-3 flex items-center gap-2">
+                <a href="{% url 'home:indice' %}" class="hover:text-white transition-colors">Início</a>
+                <i class="bi bi-chevron-right text-xs"></i>
+                <span>Contato</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">Contato</h1>
+            <p class="text-white/75 text-lg leading-relaxed">
+                "Estamos aqui para ouvir você. Entre em contato conosco."
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT SECTION -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-14">
+
+            <!-- Contact Info -->
+            <div class="lg:col-span-2 space-y-8">
+                <div>
+                    <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-4">
+                        <span class="w-8 h-0.5 bg-primary"></span> Fale conosco
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-base-content leading-tight mb-4">
+                        Como podemos <span class="text-primary">ajudá-lo?</span>
+                    </h2>
+                    <p class="text-base-content/60 leading-relaxed">
+                        Nossa equipe está pronta para atendê-lo. Entre em contato por qualquer
+                        um dos canais abaixo ou preencha o formulário ao lado.
+                    </p>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-geo-alt text-xl text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-base-content mb-0.5">Endereço</div>
+                            <div class="text-sm text-base-content/60">Rua Exemplo, 123 – Centro<br>Sua Cidade, Estado – CEP 00000-000</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-clock text-xl text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-base-content mb-0.5">Horário de atendimento</div>
+                            <div class="text-sm text-base-content/60">
+                                Segunda a Sexta: 07h às 17h<br>
+                                Sábados: 07h às 12h
                             </div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-telephone text-xl text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-base-content mb-0.5">Telefone</div>
+                            <div class="text-sm text-base-content/60">(XX) XXXX-XXXX</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-envelope text-xl text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-base-content mb-0.5">E-mail</div>
+                            <div class="text-sm text-base-content/60">contato@gensdiagnostica.com.br</div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Contact Form -->
+            <div class="lg:col-span-3">
+                <div class="card bg-base-100 border border-base-200 shadow-md">
+                    <div class="card-body p-8 md:p-10">
+                        <h3 class="text-xl font-bold text-base-content mb-6">Envie uma mensagem</h3>
+                        <form class="space-y-5">
+                            {% csrf_token %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="form-control">
+                                    <label class="label pb-1.5">
+                                        <span class="label-text font-medium">Nome completo</span>
+                                    </label>
+                                    <input type="text" placeholder="Seu nome" class="input input-bordered contact-input w-full">
+                                </div>
+                                <div class="form-control">
+                                    <label class="label pb-1.5">
+                                        <span class="label-text font-medium">Telefone</span>
+                                    </label>
+                                    <input type="tel" placeholder="(XX) XXXXX-XXXX" class="input input-bordered contact-input w-full">
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label class="label pb-1.5">
+                                    <span class="label-text font-medium">E-mail</span>
+                                </label>
+                                <input type="email" placeholder="seu@email.com" class="input input-bordered contact-input w-full">
+                            </div>
+                            <div class="form-control">
+                                <label class="label pb-1.5">
+                                    <span class="label-text font-medium">Assunto</span>
+                                </label>
+                                <select class="select select-bordered contact-input w-full">
+                                    <option disabled selected>Selecione um assunto</option>
+                                    <option>Agendamento de exame</option>
+                                    <option>Dúvidas sobre exames</option>
+                                    <option>Resultados</option>
+                                    <option>Outros</option>
+                                </select>
+                            </div>
+                            <div class="form-control">
+                                <label class="label pb-1.5">
+                                    <span class="label-text font-medium">Mensagem</span>
+                                </label>
+                                <textarea class="textarea textarea-bordered contact-input w-full h-32" placeholder="Escreva sua mensagem..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-full gap-2 mt-2">
+                                <i class="bi bi-send"></i> Enviar Mensagem
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
+</section>
+
+<!-- MAP PLACEHOLDER -->
+<section class="bg-base-200 h-64 flex items-center justify-center">
+    <div class="text-center text-base-content/40">
+        <i class="bi bi-map text-5xl block mb-3"></i>
+        <p class="text-sm">Mapa da localização</p>
+    </div>
+</section>
 
 {% endblock %}

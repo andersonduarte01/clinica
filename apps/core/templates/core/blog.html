@@ -1,46 +1,141 @@
 {% extends 'padrao/base.html' %}
 {% load static %}
+
+{% block titulo %}Gen's Diagnóstica | Blog{% endblock %}
+
 {% block estilo %}
 <style>
-.slider-area2 {
-    /* background-image: url(../img/hero/hero2.png); */
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
-.slider-area {
-    position: relative;
-    background-image: url({% static 'img/hero/h1_hero3.png' %});
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-}
+    .page-hero-bg {
+        background-image: linear-gradient(135deg, rgba(6,78,59,0.90) 0%, rgba(16,185,129,0.75) 100%),
+                          url("{% static 'img/hero/h1_hero3.png' %}");
+        background-size: cover;
+        background-position: center;
+    }
 </style>
 {% endblock %}
-{% block conteudo %}
-<!--? Slider Area Start-->
 
-<div class="slider-area slider-area2">
-            <div class="slider-active dot-style">
-                <!-- Slider Single -->
-                <div class="single-slider  d-flex align-items-center slider-height2">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-7 col-lg-8 col-md-10 ">
-                             <div class="hero-wrapper">
-                                <div class="hero__caption">
-                                    <h1 data-animation="fadeInUp" data-delay=".3s">Blog</h1>
-                                    <p data-animation="fadeInUp" data-delay=".6s">
-                                        "Leia, aprenda e inspire-se com nosso blog."
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+{% block conteudo %}
+
+<!-- PAGE HERO -->
+<section class="page-hero-bg py-28 flex items-center">
+    <div class="max-w-7xl mx-auto px-6 w-full">
+        <div class="text-white max-w-xl">
+            <div class="text-sm uppercase tracking-widest text-white/60 mb-3 flex items-center gap-2">
+                <a href="{% url 'home:indice' %}" class="hover:text-white transition-colors">Início</a>
+                <i class="bi bi-chevron-right text-xs"></i>
+                <span>Blog</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">Blog</h1>
+            <p class="text-white/75 text-lg leading-relaxed">
+                "Leia, aprenda e inspire-se com nosso blog."
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- BLOG CONTENT -->
+<section class="py-20 bg-base-100">
+    <div class="max-w-7xl mx-auto px-6">
+
+        <div class="text-center mb-14">
+            <span class="inline-flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-3">
+                <span class="w-8 h-0.5 bg-primary"></span> Conteúdos <span class="w-8 h-0.5 bg-primary"></span>
+            </span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-base-content">Saúde e Bem-estar</h2>
+        </div>
+
+        <!-- Blog placeholder cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <figure class="h-48 bg-gradient-to-br from-primary/20 to-emerald-100 flex items-center justify-center">
+                    <i class="bi bi-journal-medical text-6xl text-primary/40"></i>
+                </figure>
+                <div class="card-body p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-primary badge-sm">Saúde</span>
+                        <span class="text-xs text-base-content/40">15 Jan 2024</span>
+                    </div>
+                    <h3 class="card-title text-base font-bold leading-snug">
+                        A importância dos exames de rotina anuais
+                    </h3>
+                    <p class="text-sm text-base-content/60 leading-relaxed mt-1">
+                        Descubra por que fazer exames preventivos regularmente pode salvar sua vida
+                        e garantir mais qualidade de saúde a longo prazo.
+                    </p>
+                    <div class="card-actions mt-4">
+                        <a href="#" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Ler mais <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-<!-- Slider Area End -->
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <figure class="h-48 bg-gradient-to-br from-primary/20 to-emerald-100 flex items-center justify-center">
+                    <i class="bi bi-apple text-6xl text-primary/40"></i>
+                </figure>
+                <div class="card-body p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-primary badge-sm">Nutrição</span>
+                        <span class="text-xs text-base-content/40">22 Jan 2024</span>
+                    </div>
+                    <h3 class="card-title text-base font-bold leading-snug">
+                        Alimentação saudável e seus impactos nos exames
+                    </h3>
+                    <p class="text-sm text-base-content/60 leading-relaxed mt-1">
+                        Como sua dieta influencia diretamente os resultados laboratoriais
+                        e o que fazer para manter os níveis ideais.
+                    </p>
+                    <div class="card-actions mt-4">
+                        <a href="#" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Ler mais <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 border border-base-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <figure class="h-48 bg-gradient-to-br from-primary/20 to-emerald-100 flex items-center justify-center">
+                    <i class="bi bi-person-heart text-6xl text-primary/40"></i>
+                </figure>
+                <div class="card-body p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="badge badge-primary badge-sm">Bem-estar</span>
+                        <span class="text-xs text-base-content/40">05 Fev 2024</span>
+                    </div>
+                    <h3 class="card-title text-base font-bold leading-snug">
+                        Como o estresse afeta seus exames laboratoriais
+                    </h3>
+                    <p class="text-sm text-base-content/60 leading-relaxed mt-1">
+                        O estresse crônico pode alterar vários marcadores laboratoriais.
+                        Entenda quais e como evitar interferências nos resultados.
+                    </p>
+                    <div class="card-actions mt-4">
+                        <a href="#" class="btn btn-ghost btn-sm text-primary gap-1">
+                            Ler mais <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Newsletter -->
+        <div class="mt-16 bg-base-200 rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div>
+                <h3 class="text-2xl font-extrabold text-base-content mb-2">Receba nosso conteúdo</h3>
+                <p class="text-base-content/60">Inscreva-se e receba dicas de saúde diretamente no seu e-mail.</p>
+            </div>
+            <div class="flex gap-3 w-full md:w-auto">
+                <input type="email" placeholder="seu@email.com" class="input input-bordered flex-1 md:w-72">
+                <button class="btn btn-primary gap-2 whitespace-nowrap">
+                    <i class="bi bi-envelope-check"></i> Inscrever
+                </button>
+            </div>
+        </div>
+
+    </div>
+</section>
+
 {% endblock %}
