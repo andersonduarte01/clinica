@@ -1,6 +1,5 @@
-from django.utils.datetime_safe import datetime
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import serializers
