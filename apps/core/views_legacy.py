@@ -3,7 +3,9 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect

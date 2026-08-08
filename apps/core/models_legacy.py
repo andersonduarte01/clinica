@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from cpf_field.models import CPFField
 from stdimage import StdImageField
@@ -9,7 +9,7 @@ class Usuario(models.Model):
         ('M', 'Masculino'),
         ('F', 'Feminino'),
     ]
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     nome = models.CharField(verbose_name='Nome', max_length=155)
     assinatura = StdImageField(upload_to='Imagens/Logo',
                                 variations={'thumbnail': {'width': 300, 'height': 300}},
